@@ -207,6 +207,8 @@ const CourseDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [subtopicLoading, setSubtopicLoading] = useState(false);
     const [contentLoading, setContentLoading] = useState(false);
+    // Add state for selected quiz popup
+    const [selectedQuizPopup, setSelectedQuizPopup] = useState(null);
     useEffect(() => {
         setLoading(true);
         const token = localStorage.getItem("authToken");
@@ -243,7 +245,7 @@ const CourseDetailPage = () => {
     };
 
     // Handler for topic dropdown click to fetch subtopics
-    const handleTopicDropdown = (section, idx) => {
+    const handleTopicDropdown = async (section, idx) => {
         if (openIndex === idx) {
             setOpenIndex(null);
             setCurrentSubtopics([]);
@@ -252,20 +254,41 @@ const CourseDetailPage = () => {
         setOpenIndex(idx);
         setSubtopicLoading(true);
         const token = localStorage.getItem("authToken");
-        axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/courses/${id}/topics/${section.id}/subtopics`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then(res => {
-                setCurrentSubtopics(res.data.data); // Set the subtopics for rendering
-                setSubtopicLoading(false);
-            })
-            .catch(err => {
-                setCurrentSubtopics([]);
-                setSubtopicLoading(false);
-                console.error(err);
+        try {
+            // Fetch subtopics
+            const subtopicsRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/courses/${id}/topics/${section.id}/subtopics`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
+            let subtopicsData = subtopicsRes.data.data;
+
+            // Fetch quiz for this topic
+            const quizRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/courses/${id}/topics/${section.id}/quiz`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const quizData = quizRes.data.quizzes;
+
+            // Attach quiz data if exists
+            if (quizData && quizData.length > 0) {
+                // Find the topic object for this section
+                let topicObj = subtopicsData.find(t => t.topic === section.title);
+                
+                if (topicObj) {
+                    // Attach quiz array to topicObj
+                    topicObj.quiz = quizData;
+                } else {
+                    // If topicObj doesn't exist, create it
+                    subtopicsData.push({ topic: section.title, subtopics: [], quiz: quizData });
+                }
+                console.log(("subtopicsData",subtopicsData))
+            }
+            setCurrentSubtopics(subtopicsData);
+            setSubtopicLoading(false);
+        } catch (err) {
+            setCurrentSubtopics([]);
+            setSubtopicLoading(false);
+            console.error(err);
+        }
     };
 
     const handleSubtopicClick = (courseId, topicId, subtopicId) => {
@@ -323,7 +346,7 @@ const CourseDetailPage = () => {
                 setActive={setActive}
                 setHovered={setHovered}
             />
-
+            
             {/* Main Content */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
                 {/* Course Header Card */}
@@ -415,42 +438,90 @@ const CourseDetailPage = () => {
                                                         {(() => {
                                                             // Find the topic object for this section
                                                             const topicObj = currentSubtopics.find(t => t.topic === section.title);
-                                                            if (!topicObj || !Array.isArray(topicObj.subtopics)) return null;
-                                                            return topicObj.subtopics
-                                                                .sort((a, b) => a.displayOrder - b.displayOrder)
-                                                                .map(sub => (
-                                                                    <li
-                                                                        key={sub.id}
-                                                                        style={{
-                                                                            fontSize: "15px",
-                                                                            margin: "10px 0",
-                                                                            color: "#367cfe",
-                                                                            fontWeight: "500",
-                                                                            paddingLeft: "12px",
-                                                                            position: "relative",
-                                                                            cursor: "pointer",
-                                                                            borderRadius: "8px",
-                                                                            background: selectedSubtopic === sub.title ? "#e3edff" : "transparent",
-                                                                            transition: "background 0.2s",
-                                                                        }}
-                                                                        onClick={e => {
-                                                                            e.stopPropagation();
-                                                                            handleSubtopicClick(id, topicObj.id, sub.id); // <-- API call for subtopic content
-                                                                        }}
-                                                                    >
-                                                                        <span
+                                                            if (!topicObj) return null;
+                                                            // Render subtopics
+                                                            let subtopicItems = [];
+                                                            if (Array.isArray(topicObj.subtopics)) {
+                                                                subtopicItems = topicObj.subtopics
+                                                                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                                                                    .map(sub => (
+                                                                        <li
+                                                                            key={`subtopic-${sub.id}`}
                                                                             style={{
-                                                                                display: "inline-block",
-                                                                                padding: "6px 14px",
-                                                                                color: "#367cfe",
-                                                                                fontWeight: "600",
                                                                                 fontSize: "15px",
+                                                                                margin: "10px 0",
+                                                                                color: "#367cfe",
+                                                                                fontWeight: "500",
+                                                                                paddingLeft: "12px",
+                                                                                position: "relative",
+                                                                                cursor: "pointer",
+                                                                                borderRadius: "8px",
+                                                                                background: selectedSubtopic === sub.title ? "#e3edff" : "transparent",
+                                                                                transition: "background 0.2s",
+                                                                            }}
+                                                                            onClick={e => {
+                                                                                e.stopPropagation();
+                                                                                handleSubtopicClick(id, topicObj.id, sub.id); // <-- API call for subtopic content
                                                                             }}
                                                                         >
-                                                                            {sub.title}
-                                                                        </span>
-                                                                    </li>
-                                                                ));
+                                                                            <span
+                                                                                style={{
+                                                                                    display: "inline-block",
+                                                                                    padding: "6px 14px",
+                                                                                    color: "#367cfe",
+                                                                                    fontWeight: "600",
+                                                                                    fontSize: "15px",
+                                                                                }}
+                                                                            >
+                                                                                {sub.title}
+                                                                            </span>
+                                                                        </li>
+                                                                    ));
+                                                            }
+                                                            // Render quizzes if exist
+                                                            let quizItems = [];
+                                                            if (Array.isArray(topicObj.quiz) && topicObj.quiz.length > 0) {
+                                                                quizItems = topicObj.quiz
+                                                                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                                                                    .map(quiz => (
+                                                                        <li
+                                                                            key={`quiz-${quiz.id}`}
+                                                                            style={{
+                                                                                fontSize: "15px",
+                                                                                margin: "10px 0",
+                                                                                color: "#ff9800",
+                                                                                fontWeight: "600",
+                                                                                paddingLeft: "12px",
+                                                                                position: "relative",
+                                                                                cursor: "pointer",
+                                                                                borderRadius: "8px",
+                                                                                background: "#fffbe6",
+                                                                                transition: "background 0.2s",
+                                                                                display: "flex",
+                                                                                alignItems: "center"
+                                                                            }}
+                                                                            onClick={e => {
+                                                                                e.stopPropagation();
+                                                                                setSelectedQuizPopup(quiz.questionData);
+                                                                            }}
+                                                                        >
+                                                                            {/* Quiz icon */}
+                                                                            <span style={{ marginRight: "10px", fontSize: "20px" }}>
+                                                                                <FaTasks style={{ color: "#ff9800" }} />
+                                                                            </span>
+                                                                            <span style={{
+                                                                                display: "inline-block",
+                                                                                padding: "6px 14px",
+                                                                                color: "#ff9800",
+                                                                                fontWeight: "700",
+                                                                                fontSize: "15px",
+                                                                            }}>
+                                                                                {quiz.title}
+                                                                            </span>
+                                                                        </li>
+                                                                    ));
+                                                            }
+                                                            return [...subtopicItems, ...quizItems];
                                                         })()}
                                                     </ul>
                                                 )}
@@ -724,6 +795,15 @@ const CourseDetailPage = () => {
                         message="Quiz submitted successfully!"
                         isVisible={showToast}
                         onClose={() => setShowToast(false)}
+                    />
+                )}
+
+                {/* Render QuizPopup for selected quiz */}
+                {selectedQuizPopup && (
+                    <QuizPopup
+                        onClose={() => setSelectedQuizPopup(null)}
+                        onSubmit={() => setSelectedQuizPopup(null)}
+                        quizQuestions={selectedQuizPopup}
                     />
                 )}
             </div>
