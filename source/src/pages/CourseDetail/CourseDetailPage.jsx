@@ -94,7 +94,11 @@ const CourseDetailPage = () => {
     fetchSubtopicContents(courseId, topicId, subtopicId, token)
       .then(res => {
         setContentData(res.data.data);
-        setSelectedSubtopic(subtopicTitle || "");
+        setSelectedSubtopic(
+          res.data.data && res.data.data.length > 0
+            ? subtopicTitle
+            : ""
+        );
         setContentLoading(false);
       })
       .catch(err => {
