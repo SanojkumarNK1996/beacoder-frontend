@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import Signup from './pages/SignUp'
-import CourseDetailPage from './pages/CourseDetailPage'
-import CourseList from './pages/CourseList'
-import Login from './pages/Login'
+import Signup from './pages/SignUp/SignUp.jsx'
+import CourseDetailPage from './pages/CourseDetail/CourseDetailPage.jsx'
+import CourseList from './pages/CourseList/CourseList.jsx'
+import Login from './pages/Login/Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {

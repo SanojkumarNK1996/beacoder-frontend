@@ -1,5 +1,8 @@
+const PRIMARY_COLOR = "#367cfe";
+const PRIMARY_COLOR_HOVER = "#2556b8";
+const PRIMARY_SHADOW = "0 2px 8px rgba(54,124,254,0.18)";
 
-export const CourseCard = ({ course, hovered, onMouseEnter, onMouseLeave,buttonText }) => (
+export const CourseCard = ({ course, hovered, onMouseEnter, onMouseLeave, buttonText }) => (
     <div
         style={{
             background: hovered ? "#f0f6ff" : "#fff",
@@ -86,7 +89,7 @@ export const CourseCard = ({ course, hovered, onMouseEnter, onMouseLeave,buttonT
         </div>
         <div
             style={{
-                background: "#367cfe",
+                background: PRIMARY_COLOR,
                 borderRadius: "30px",
                 height: "40px",
                 width: "114px",
@@ -100,11 +103,11 @@ export const CourseCard = ({ course, hovered, onMouseEnter, onMouseLeave,buttonT
                 cursor: "pointer",
             }}
             onMouseEnter={e => {
-                e.currentTarget.style.background = "#2556b8";
-                e.currentTarget.style.boxShadow = "0 2px 8px rgba(54,124,254,0.18)";
+                e.currentTarget.style.background = PRIMARY_COLOR_HOVER;
+                e.currentTarget.style.boxShadow = PRIMARY_SHADOW;
             }}
             onMouseLeave={e => {
-                e.currentTarget.style.background = "#367cfe";
+                e.currentTarget.style.background = PRIMARY_COLOR;
                 e.currentTarget.style.boxShadow = "none";
             }}
         >
