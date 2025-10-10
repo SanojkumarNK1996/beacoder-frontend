@@ -1,0 +1,173 @@
+.signup-container {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(120deg, #f6f8fc 0%, #e3eafc 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Montserrat", Arial, sans-serif;
+}
+
+.signup-wrapper {
+  display: flex;
+  flex-direction: row;
+  background: none;
+  gap: 0px;
+}
+
+/* 🌟 Left Section */
+.signup-left {
+  width: 700px;
+  height: 700px;
+  background: linear-gradient(120deg, #367cfe 0%, #6ad7ff 100%);
+  border-radius: 32px 0 0 32px;
+  box-shadow: 0 8px 32px rgba(54, 124, 254, 0.14);
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.signup-left h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 22px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 16px #367cfe55;
+  text-align: center;
+}
+
+.signup-left p {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 38px;
+  opacity: 0.98;
+  text-align: center;
+  max-width: 440px;
+  line-height: 1.4;
+}
+
+/* 📝 Right Section */
+.signup-right {
+  width: 700px;
+  height: 700px;
+  background: #fff;
+  border-radius: 0 32px 32px 0;
+  box-shadow: 0 8px 32px rgba(54, 124, 254, 0.14);
+  padding: 64px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.signup-right h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #367cfe;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.signup-right form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.signup-right input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #e3eafc;
+  font-size: 16px;
+  outline: none;
+  background: #f6f8fc;
+}
+
+/* ✅ Button */
+.signup-right button {
+  width: 100%;
+  background: linear-gradient(90deg, #367cfe 0%, #5ab1ff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 14px 0;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.3s ease;
+}
+
+.signup-right button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.loading-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.login-link {
+  margin-top: 14px;
+  font-size: 15px;
+  color: #444;
+}
+
+.login-text {
+  color: #367cfe;
+  font-weight: 700;
+}
+
+/* ✅ Toast Styles */
+.toast {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  padding: 18px 40px;
+  border-radius: 24px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10001;
+  animation: fadeIn 0.3s;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.toast.success {
+  background: linear-gradient(90deg, #367cfe 0%, #5ab1ff 100%);
+  box-shadow: 0 4px 24px rgba(54, 124, 254, 0.18);
+}
+
+.toast.failed {
+  background: linear-gradient(90deg, #fe5f5f 0%, #ffb6b6 100%);
+  box-shadow: 0 4px 24px rgba(254, 95, 95, 0.18);
+}
+
+.toast-icon {
+  font-size: 24px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
