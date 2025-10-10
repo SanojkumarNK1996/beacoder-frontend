@@ -31,7 +31,6 @@ resource "null_resource" "build_and_deploy" {
 
       echo "🔐 Fetching secrets from AWS Secrets Manager..."
       SECRET_JSON=$(aws secretsmanager get-secret-value \
-        --region us-east-1 \
         --secret-id ${var.secret_name} \
         --query SecretString \
         --output text)
