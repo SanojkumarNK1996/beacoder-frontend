@@ -40,7 +40,7 @@ export const NewCourseCard = ({ course, hovered, onMouseEnter, onMouseLeave, but
                 />
             </div>
             <div style={{ marginLeft: "36px", flex: 1 }}>
-                <span style={{ fontSize: "20px", fontWeight: "600", color: "#1e1e1e" }}>
+                <span style={{ fontSize: "22px", fontWeight: "600", color: "#1e1e1e" }}>
                     {course.courseName}
                 </span>
             </div>
@@ -69,7 +69,7 @@ export const NewCourseCard = ({ course, hovered, onMouseEnter, onMouseLeave, but
                 }}
                 onClick={() => navigate(`/courses/${course.id}`)}
             >
-                <span style={{ fontSize: "16px", fontWeight: "600", color: "#fff" }}>
+                <span style={{ fontSize: "19px", fontWeight: "600", color: "#fff" }}>
                     {`${buttonText}`}
                 </span>
             </div>

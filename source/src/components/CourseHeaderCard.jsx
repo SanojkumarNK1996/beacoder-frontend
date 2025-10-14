@@ -33,14 +33,14 @@ export const CourseHeaderCard = ({ course }) => (
         <div style={{ flex: 1 }}>
             <span
                 style={{
-                    fontSize: "20px",
+                    fontSize: "22px",
                     fontWeight: 600,
                     color: "#1e1e1e",
                 }}
             >
                 {course.courseName}
             </span>
-            <p style={{ fontSize: "14px", color: "#555", marginTop: "8px" }}>
+            <p style={{ fontSize: "17px", color: "#555", marginTop: "8px" }}>
                 {course.description}
             </p>
         </div>
