@@ -34,7 +34,7 @@ export const NewCourseCard = ({ course, hovered, onMouseEnter, onMouseLeave, but
                 }}
             >
                 <img
-                    src={course.imageUrl}
+                    src={`/images/${course.imageUrl}`}
                     alt={course.courseName}
                     style={{ height: "72px", width: "72px", objectFit: "contain" }}
                 />
