@@ -390,6 +390,63 @@
   margin-bottom: 20px;
 }
 
+/* Styling for rich HTML inside description-text (lists, headings, code, pre) */
+.description-text h1,
+.description-text h2,
+.description-text h3 {
+  color: #222;
+  margin: 12px 0;
+  font-weight: 700;
+}
+.description-text p {
+  margin: 10px 0;
+  color: #444;
+}
+.description-text ul,
+.description-text ol {
+  margin: 10px 0 16px 20px;
+}
+.description-text pre {
+  /* Match .code-block container exactly */
+  width: 60%;
+  background: linear-gradient(90deg, #e3edff 0%, #f9f9f9 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(54, 124, 254, 0.1), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #367cfe33;
+  overflow: hidden;
+  font-family: Fira Mono, Menlo, Monaco, Consolas, monospace;
+  color: #222;
+}
+.description-text pre::before {
+  /* Match .code-header */
+  content: "code";
+  display: block;
+  background: linear-gradient(90deg, #367cfe 0%, #6ad7ff 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 8px 22px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  letter-spacing: 1px;
+  font-family: Fira Mono, Menlo, Monaco, Consolas, monospace;
+}
+.description-text pre code {
+  /* Match .code-body */
+  margin: 0;
+  display: block;
+  padding: 22px 24px;
+  font-size: 1.15rem;
+  color: #222;
+  font-family: Fira Mono, Menlo, Monaco, Consolas, monospace;
+  border-radius: 0 0 16px 16px;
+  overflow-x: auto;
+  line-height: 1.7;
+  background: transparent;
+  border: none;
+  white-space: pre-wrap; /* preserve formatting but wrap long lines */
+}
+
 .code-block {
   width: 60%;
   background: linear-gradient(90deg, #e3edff 0%, #f9f9f9 100%);

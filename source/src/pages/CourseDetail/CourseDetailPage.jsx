@@ -94,7 +94,11 @@ const CourseDetailPage = () => {
     fetchSubtopicContents(courseId, topicId, subtopicId, token)
       .then(res => {
         setContentData(res.data.data);
-        setSelectedSubtopic(subtopicTitle || "");
+        setSelectedSubtopic(
+          res.data.data && res.data.data.length > 0
+            ? subtopicTitle
+            : ""
+        );
         setContentLoading(false);
       })
       .catch(err => {
@@ -325,9 +329,13 @@ const CourseDetailPage = () => {
                           <div className="description-title">{item.title}</div>
                         )}
                         {item.dataType === "notes" && (
-                          <div className="description-text">
-                            {item.data.description}
-                          </div>
+                          // Render rich HTML coming from the API. We assume the API returns
+                          // sanitized HTML. If the API cannot guarantee sanitization,
+                          // sanitize on the client before injecting.
+                          <div
+                            className="description-text"
+                            dangerouslySetInnerHTML={{ __html: item.data.description }}
+                          />
                         )}
                         {item.data.codeSnippet && (
                           <div className="code-block">

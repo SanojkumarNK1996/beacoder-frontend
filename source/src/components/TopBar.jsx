@@ -114,7 +114,7 @@ export const TopBar = ({ userName, onLogout }) => {
                 </div>
                 <span
                     style={{
-                        fontSize: "16px",
+                        fontSize: "18px",
                         fontWeight: "600",
                         color: "#000",
                         whiteSpace: "nowrap",
@@ -128,8 +128,8 @@ export const TopBar = ({ userName, onLogout }) => {
                     <div
                         style={{
                             position: "absolute",
-                            top: "120%", // Slightly more below the profile button
-                            left: "-220px", // Move further to the left so the box is fully visible
+                            top: "120%",
+                            left: "-220px",
                             background: "#fff",
                             borderRadius: "16px",
                             boxShadow: "0 8px 32px rgba(54,124,254,0.18)",
@@ -141,7 +141,7 @@ export const TopBar = ({ userName, onLogout }) => {
                             gap: "18px",
                             zIndex: 1000,
                             border: "1.5px solid #e3eafc",
-                            animation: "fadeIn 0.2s",
+                            animation: "popBounce 0.4s cubic-bezier(0.4,0,0.2,1)",
                         }}
                         onMouseLeave={() => setShowPopup(false)}
                     >
@@ -151,7 +151,8 @@ export const TopBar = ({ userName, onLogout }) => {
                             marginBottom: "8px",
                             background: "#f6f8fc",
                             borderRadius: "50%",
-                            boxShadow: "0 2px 8px #e3eafc"
+                            boxShadow: "0 2px 8px #e3eafc",
+                            transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
                         }} />
                         <span style={{
                             fontSize: "22px",
@@ -188,6 +189,56 @@ export const TopBar = ({ userName, onLogout }) => {
                     </div>
                 )}
             </div>
+        {/* Add keyframes for fadeScaleIn animation */}
+        <style>{`
+            @keyframes fadeScaleIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.85) translateY(20px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+            @keyframes slideDownFade {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-30px) scale(0.95);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            @keyframes popBounce {
+                0% {
+                  opacity: 0;
+                  transform: scale(0.7);
+                }
+                60% {
+                  opacity: 1;
+                  transform: scale(1.05);
+                }
+                80% {
+                  transform: scale(0.98);
+                }
+                100% {
+                  opacity: 1;
+                  transform: scale(1);
+                }
+              }
+              @keyframes flipIn {
+                0% {
+                  opacity: 0;
+                  transform: rotateY(-90deg) scale(0.8);
+                }
+                100% {
+                  opacity: 1;
+                  transform: rotateY(0deg) scale(1);
+                }
+              }
+        `}</style>
         </div>
     );
 };
