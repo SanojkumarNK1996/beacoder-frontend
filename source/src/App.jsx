@@ -4,6 +4,7 @@ import CourseDetailPage from './pages/CourseDetail/CourseDetailPage.jsx'
 import CourseList from './pages/CourseList/CourseList.jsx'
 import Login from './pages/Login/Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute';
+import HomePage from "./pages/Homepage.jsx";
 
 function App() {
   return (
@@ -14,6 +15,11 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Protected routes */}
+            <Route path="/homepage" element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        } />
         <Route path="/courses" element={
           <ProtectedRoute>
             <CourseList />
