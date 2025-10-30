@@ -9,7 +9,7 @@ const LoginToast = ({ show }) => {
   return (
     <div className="toast success">
       <span className="toast-icon">✔</span>
-      Login Successful! Redirecting to courses...
+      Login Successful! Redirecting to homepage...
     </div>
   );
 };
@@ -59,7 +59,7 @@ const Login = () => {
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-        navigate("/courses");
+        navigate("/homepage");
       }, 1800);
     } catch (err) {
       setErrorMsg(err.message);
