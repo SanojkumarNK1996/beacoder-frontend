@@ -96,34 +96,39 @@ const students = [
 
 const mentors = [
     {
-        name: "Arjun Mehta",
+        name: "Sanoj Kumar",
         role: "Senior Software Engineer",
-        exp: "8+ years in React & Node.js",
-        img: "https://thumbs.dreamstime.com/b/happy-young-indian-arab-business-man-wearing-suit-headshot-portrait-ceo-leader-professional-manager-smiling-expert-businessman-257487832.jpg",
+        exp: "8+ years in Backend developments",
+        img: "/images/beacoder_tutor_sanoj.png",
+        linkedinUrl : "www.linkedin.com/in/sanoj-kumar-nk",
     },
     {
-        name: "Priya Nair",
-        role: "AWS Cloud Architect",
-        exp: "10+ years in Cloud & DevOps",
-        img: "https://media.istockphoto.com/id/1477871401/photo/portrait-of-happy-young-businesswoman-arms-crossed-with-looking-at-camera-on-white-background.jpg?s=612x612&w=0&k=20&c=uhMwAWEPSVDzWUDkqDimY5AaznfCXy7j30KyJnUuIMQ=",
+        name: "Naveen Kumar",
+        role: "Senior Software Engineer",
+        exp: "9+ years in UI/UX and JS Frameworks",
+        img: "/images/beacoder_tutor_naveen.png",
+        linkedinUrl : "https://www.linkedin.com/in/naveenkumar-a-001/",
     },
     {
-        name: "Rohan Gupta",
-        role: "Frontend Mentor",
-        exp: "7+ years in UI/UX and JS Frameworks",
-        img: "https://i.pinimg.com/564x/02/a7/36/02a73659bf914a8cfd284e0624fefa18.jpg",
+        name: "Arun S K",
+        role: "Lead Software Engineer I",
+        exp: "8+ years in Backend developments",
+        img: "/images/beacoder_tutor_arun.png",
+        linkedinUrl : "https://www.linkedin.com/in/arunkavi115/",
     },
     {
-        name: "Ananya Sharma",
-        role: "Data Science Expert",
-        exp: "9+ years in Python & ML",
-        img: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=800",
-    },
-    {
-        name: "Karthik Iyer",
+        name: "Akshay S",
         role: "Full Stack Developer",
         exp: "6+ years in MERN Stack",
-        img: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=800",
+        img: "/images/beacoder_tutor_akshay.png",
+        linkedinUrl : "https://www.linkedin.com/in/arunkavi115/",
+    },
+    {
+        name: "Ahalya",
+        role: "Full Stack Developer",
+        exp: "6+ years in MERN Stack",
+        img: "/images/beacoder_tutor_ahalya.png",
+        linkedinUrl : "https://www.linkedin.com/in/arunkavi115/",
     },
 ];
 
@@ -198,24 +203,34 @@ const HomePage = () => {
 
     const courses = [
         {
-            title: "JavaScript for Beginners",
-            img: "https://ik.imagekit.io/ably/ghost/prod/2023/12/choosing-the-best-javascript-frameworks-for-your-next-project.png?tr=w-1728,q-50",
+            title: "JAVA",
+            img: "https://as2.ftcdn.net/v2/jpg/02/92/83/57/1000_F_292835773_oImixQGFKLpOPnjfsbesHyqdjOk5hsxL.jpg",
+            rating : "4.7",
+            viewers : "(5.3k)",
         },
         {
-            title: "Mastering Python",
-            img: "https://i.pinimg.com/736x/d8/01/01/d80101476830af9e9bb328449d3d08db.jpg",
+            title: "Data Structure & Algorithm",
+            img: "https://as1.ftcdn.net/v2/jpg/00/51/66/86/1000_F_51668666_ySJrR1BTXPw4bPbUPm0rxMK0U4ofS9kH.jpg",
+            rating : "4.6",
+            viewers : "(4.1k)",
         },
         {
-            title: "Web Development Bootcamp",
-            img: "https://ik.imagekit.io/ably/ghost/prod/2023/12/choosing-the-best-javascript-frameworks-for-your-next-project.png?tr=w-1728,q-50",
+            title: "Database Fundamentals (SQL)",
+            img: "https://as1.ftcdn.net/v2/jpg/01/38/58/62/1000_F_138586261_nYWe7WbUi9ouurv6tcl2WmpLaXV1xdea.jpg",
+            rating : "4.2",
+            viewers : "(6.2k)",
         },
         {
-            title: "Data Science Fundamentals",
-            img: "https://i.pinimg.com/736x/d8/01/01/d80101476830af9e9bb328449d3d08db.jpg",
+            title: "Cloud Computing (AWS)",
+            img: "https://as2.ftcdn.net/v2/jpg/05/42/29/57/1000_F_542295701_fZVdsAuV5OBjQ2BUDhjOTBR32JThLRa6.jpg",
+            rating : "4.1",
+            viewers : "(7.4k)",
         },
         {
-            title: "UI/UX Design Masterclass",
-            img: "https://cdn-icons-png.flaticon.com/512/5968/5968705.png",
+            title: "React JS",
+            img: "https://as2.ftcdn.net/v2/jpg/16/68/26/85/1000_F_1668268577_NQLAdRVIYMx9iBQq6OwCqwCH2mW6KN1R.jpg",
+            rating : "4.0",
+            viewers : "(3.3k)",
         },
     ];
 
@@ -459,25 +474,153 @@ const HomePage = () => {
                                 We turn <strong style={{ color: "#007bff" }}>learners</strong> into{" "}
                                 <strong style={{ color: "#00c3ff" }}>creators</strong>. Our platform
                                 bridges the gap between theory and practice through{" "}
-                                <strong>hands-on projects</strong>,{" "}
+                                <strong>structured learning paths</strong>,{" "}
                                 <strong>mentor-led guidance</strong>, and{" "}
-                                <strong>real-world applications</strong>.
+                                <strong>hands-on projects</strong>.
                             </p>
 
                             <p style={{ fontSize: "1.45rem", marginBottom: "25px" }}>
-                                With an <strong>affordable subscription</strong>, you gain unlimited access
-                                to every course — from{" "}
-                                <strong style={{ color: "#007bff" }}>AWS</strong> to{" "}
-                                <strong style={{ color: "#007bff" }}>React</strong> — all crafted by
-                                experts working in the industry.
+                                From <strong style={{ color: "#007bff" }}>DSA</strong> to{" "}
+                                <strong style={{ color: "#00c3ff" }}>system design</strong>,{" "}
+                                <strong>mock interviews</strong> to{" "}
+                                <strong>resume building</strong> and{" "}
+                                <strong>interview referral</strong> — we prepare you for every stage of your{" "}
+                                <strong>software engineering journey</strong>.
                             </p>
 
-                            <p style={{ fontSize: "1.45rem" }}>
-                                We don’t just teach code — we{" "}
-                                <strong style={{ color: "#007bff" }}>shape professionals</strong>.{" "}
-                                <strong>Learn. Build. Grow.</strong> Your career transformation starts
-                                here.
+                            <p style={{ fontSize: "1.45rem", marginBottom: "25px" }}>
+                                Our <strong>mentors</strong> are <strong>engineers</strong> from{" "}
+                                <span style={{ background: "linear-gradient(90deg, #007bff, #00c3ff)", 
+                                                color: "#fff", padding: "2px 8px", borderRadius: "8px" }}>
+                                    leading product-based companies
+                                </span>{" "}
+                                with years of real-world experience guiding aspiring developers.
                             </p>
+                            <p
+                                style={{
+                                    fontSize: "1.6rem",
+                                    marginBottom: "25px",
+                                    padding: "15px 20px",
+                                    backgroundColor: "#f4f8ff",
+                                    borderLeft: "5px solid #007bff",
+                                    borderRadius: "10px",
+                                    lineHeight: "1.8",
+                                }}
+                                >
+                                <strong style={{ color: "#007bff" }}>Our promise:</strong> You pay the main fee{" "}
+                                <strong style={{ color: "#00b894" }}>only after you get a job. </strong>  
+                                That’s how confident we are in our methods.
+                            </p>
+                        </motion.div>
+                    </motion.section>
+
+
+                    {/* ================= What You Should Do ================= */}
+                    <motion.section
+                        style={{
+                            background: "linear-gradient(135deg, #f0f7ff 0%, #dcecff 100%)",
+                            padding: "100px 20px",
+                            textAlign: "center",
+                            width: "100%",
+                            position: "relative",
+                            overflow: "hidden",
+                        }}
+                        initial={{ opacity: 0, y: 60 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
+                    >
+                        {/* Floating Glow Circles */}
+
+                        {/* Animated Heading */}
+                        <motion.h2
+                            style={{
+                                fontSize: "3rem", // Increased by 4px (was 2.8rem)
+                                color: "#0b2546",
+                                fontWeight: 800,
+                                marginBottom: "50px",
+                                position: "relative",
+                                display: "inline-block",
+                                zIndex: 1,
+                                letterSpacing: "1px",
+                                textShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                            }}
+                        >
+                            What You Should Do ?
+                            {/* Animated Underline */}
+                            <motion.span
+                                style={{
+                                    position: "absolute",
+                                    bottom: -10,
+                                    left: 0,
+                                    height: "4px",
+                                    width: "40%",
+                                    borderRadius: "4px",
+                                    background: "linear-gradient(90deg, #00c3ff, #007bff, #00c3ff)",
+                                    boxShadow: "0 0 10px rgba(0, 195, 255, 0.6)",
+                                }}
+                                animate={{
+                                    x: ["0%", "150%", "0%"], // moves left to right and back
+                                }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }}
+                            />
+                        </motion.h2>
+
+                        {/* Glass Paragraph Box */}
+                        <motion.div
+                            style={{
+                                maxWidth: "950px",
+                                margin: "0 auto",
+                                background: "rgba(255, 255, 255, 0.55)",
+                                backdropFilter: "blur(12px)",
+                                borderRadius: "25px",
+                                padding: "60px 70px",
+                                zIndex: 1,
+                                boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
+                                lineHeight: 1.9,
+                                color: "#475569",
+                                textAlign: "left",
+                            }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                        >
+                            <div style={{ fontSize: "1.25rem", lineHeight: "1.8", marginBottom: "35px" }}>
+                            <p style={{ marginBottom: "15px" }}>
+                                <strong style={{ color: "#007bff" }}>
+                                Before choosing any course,
+                                </strong>{" "}
+                                ask the right questions — to yourself, to AI, or to anyone who’s been in IT.
+                            </p>
+
+                            <ul style={{ listStyleType: "disc", marginLeft: "25px", marginTop: "10px" }}>
+                                <li style={{ marginBottom: "10px" }}>
+                                Which are the best <strong>programming languages</strong> and{" "}
+                                <strong>frameworks</strong> to learn right now for getting hired?
+                                </li>
+                                <li style={{ marginBottom: "10px" }}>
+                                How do <strong>Referrals</strong> actually work? If companies pay so much for referrals, why aren’t people getting them?
+                                </li>
+                                <li style={{ marginBottom: "10px" }}>
+                                What’s the current <strong>demand for software engineers</strong> in the Indian market?
+                                </li>
+                                <li style={{ marginBottom: "10px" }}>
+                                Are the <strong>mentors</strong> in your course truly experienced — 
+                                with at least <strong>5+ years</strong> in real product-based roles?
+                                </li>
+                                <li>
+                                And finally — is there any platform confident enough to say:{" "}
+                                <em style={{ color: "#00b894", fontWeight: "600" }}>
+                                    “Pay us only after you liked the course”?
+                                </em>
+                                </li>
+                            </ul>
+                            </div>
+
                         </motion.div>
                     </motion.section>
 
@@ -530,7 +673,7 @@ const HomePage = () => {
                                 margin: "0 auto",
                             }}
                         >
-                            {courses.slice(0, 4).map((course, index) => (
+                            {courses.slice(0, 5).map((course, index) => (
                                 <motion.div
                                     key={index}
                                     whileHover={{
@@ -577,7 +720,7 @@ const HomePage = () => {
                                                 <span key={i} style={{ color: i < 4 ? "#FFD700" : "#ccc" }}>★</span>
                                             ))}
                                             <span style={{ color: "#475569", marginLeft: "6px", fontSize: "0.9rem" }}>
-                                                4.7 (2.3k)
+                                                {course.rating} {course.viewers}
                                             </span>
                                         </div>
                                         <p
