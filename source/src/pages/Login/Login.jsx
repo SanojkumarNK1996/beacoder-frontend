@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import SpinningCircleLoader from "../../components/SpinningCircleLoader";
-import { loginUser } from "../../api/Login"; 
+import { loginUser } from "../../api/Login";
 import "./Login.css";
 
 const LoginToast = ({ show }) => {
@@ -60,9 +60,9 @@ const Login = () => {
       setTimeout(() => {
         setShowToast(false);
         navigate("/homepage");
-      }, 1800);
+      }, 1500);
     } catch (err) {
-      setErrorMsg(err.message);
+      setErrorMsg(err.message || "Unable to login");
       setShowFailedToast(true);
       setTimeout(() => setShowFailedToast(false), 3000);
     } finally {
@@ -77,24 +77,12 @@ const Login = () => {
 
       <div className="login-container">
         <div className="login-card">
-          {/* Left Side */}
-          <div className="login-left">
-            <h1>Bright Ideas Start Here</h1>
-            <p>{quote}</p>
-            <div className="lightbulb">
-              <svg width="120" height="120" viewBox="0 0 120 120" fill="none" className="glow">
-                <ellipse cx="60" cy="60" rx="28" ry="28" fill="#e3eafc" />
-                <rect x="52" y="88" width="16" height="12" rx="4" fill="#367cfe" />
-                <circle cx="60" cy="60" r="18" fill="#fff" />
-              </svg>
-            </div>
-          </div>
+          {/* RIGHT (form) appears first on mobile via CSS order */}
+          <section className="login-right" aria-labelledby="login-heading">
+            <h2 id="login-heading">Login</h2>
 
-          {/* Right Side */}
-          <div className="login-right">
-            <h2>Login</h2>
-            <form onSubmit={formSubmit}>
-              <div>
+            <form onSubmit={formSubmit} className="login-form" noValidate>
+              <div className="field">
                 <label htmlFor="email">Email</label>
                 <input
                   id="email"
@@ -105,10 +93,11 @@ const Login = () => {
                   className={hoveredInput === "email" ? "input active" : "input"}
                   onFocus={() => setHoveredInput("email")}
                   onBlur={() => setHoveredInput(null)}
+                  required
                 />
               </div>
 
-              <div>
+              <div className="field">
                 <label htmlFor="password">Password</label>
                 <input
                   id="password"
@@ -119,6 +108,7 @@ const Login = () => {
                   className={hoveredInput === "password" ? "input active" : "input"}
                   onFocus={() => setHoveredInput("password")}
                   onBlur={() => setHoveredInput(null)}
+                  required
                 />
               </div>
 
@@ -128,6 +118,7 @@ const Login = () => {
                 onMouseEnter={() => setHoveredButton(true)}
                 onMouseLeave={() => setHoveredButton(false)}
                 disabled={loading}
+                aria-busy={loading}
               >
                 {loading ? (
                   <span className="loading-wrapper">
@@ -140,13 +131,30 @@ const Login = () => {
               </button>
 
               <div className="signup-link">
-                Do not have an account?{" "}
+                Don't have an account?
                 <Link to="/signup" className="signup-text">
-                  SignUp
+                  Sign Up
                 </Link>
               </div>
             </form>
-          </div>
+          </section>
+
+          {/* LEFT — decorative, minimal on mobile */}
+          <aside className="login-left" aria-hidden="true">
+            <div className="left-inner">
+              <h1>Bright Ideas Start Here</h1>
+              <p className="quote">{quote}</p>
+
+              <div className="lightbulb" aria-hidden="true">
+                {/* simple svg with subtle animation */}
+                <svg width="96" height="96" viewBox="0 0 120 120" fill="none" className="glow">
+                  <ellipse cx="60" cy="60" rx="28" ry="28" fill="#e3eafc" />
+                  <rect x="52" y="88" width="16" height="12" rx="4" fill="#367cfe" />
+                  <circle cx="60" cy="60" r="18" fill="#fff" />
+                </svg>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </>

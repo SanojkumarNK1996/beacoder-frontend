@@ -5,6 +5,7 @@ import CourseList from './pages/CourseList/CourseList.jsx'
 import Login from './pages/Login/Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from "./pages/Homepage.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         {/* Public routes */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+          <Route path="/landing-page" element={<LandingPage />} />
 
         {/* Protected routes */}
             <Route path="/homepage" element={
@@ -47,7 +49,7 @@ function App() {
         } />
 
         {/* Default route: show Login for any unknown path */}
-        <Route path="*" element={<Login />} />
+        <Route path="*" element={<LandingPage />} />
       </Routes>
     </>
   )
