@@ -522,7 +522,6 @@ const LandingPage = () => {
                     </motion.div>
                 </motion.section>
 
-
                 {/* ================= Platform Features ================= */}
                 <motion.section
                     id="features"
@@ -664,7 +663,6 @@ const LandingPage = () => {
                     </div>
                 </motion.section>
 
-
                 {/* ================= What You Should Do ================= */}
                 <motion.section
                     style={{
@@ -782,13 +780,12 @@ const LandingPage = () => {
                     </motion.div>
                 </motion.section>
 
-
                 {/* ================= Popular Courses ================= */}
                 <motion.section
                     id="courses"
                     style={{
                         background: "linear-gradient(135deg, #f0f7ff 0%, #dcecff 100%)",
-                        padding: "clamp(40px, 6vw, 100px) clamp(16px, 5vw, 80px)", // ✅ reduced min padding for mobile
+                        padding: "clamp(40px, 6vw, 100px) clamp(16px, 5vw, 80px)",
                         textAlign: "center",
                         width: "100%",
                         position: "relative",
@@ -846,7 +843,7 @@ const LandingPage = () => {
                                 }}
                                 transition={{ type: "spring", stiffness: 200 }}
                                 style={{
-                                    background: "rgba(255, 255, 255, 0.75)",
+                                    background: "rgba(255, 255, 255, 0.85)",
                                     backdropFilter: "blur(10px)",
                                     border: "1px solid rgba(255,255,255,0.4)",
                                     borderRadius: "20px",
@@ -854,6 +851,10 @@ const LandingPage = () => {
                                     textAlign: "left",
                                     transition: "all 0.3s ease",
                                     boxShadow: "0 6px 15px rgba(0,0,0,0.08)",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-between",
+                                    height: "100%", // ensures button is visible
                                 }}
                             >
                                 <img
@@ -861,55 +862,61 @@ const LandingPage = () => {
                                     alt={course.title}
                                     style={{
                                         width: "100%",
-                                        height: "clamp(160px, 25vw, 230px)",
+                                        height: "220px",
                                         objectFit: "cover",
                                     }}
                                 />
                                 <div
                                     style={{
                                         padding: "clamp(14px, 3vw, 22px)",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "space-between",
+                                        flexGrow: 1,
                                     }}
                                 >
-                                    <h3
-                                        style={{
-                                            color: "#0b2546",
-                                            fontWeight: 700,
-                                            marginBottom: "6px",
-                                            fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
-                                            lineHeight: "1.3",
-                                        }}
-                                    >
-                                        {course.title}
-                                    </h3>
-
-                                    <div style={{ marginBottom: "8px" }}>
-                                        {[...Array(5)].map((_, i) => (
-                                            <span key={i} style={{ color: i < 4 ? "#FFD700" : "#ccc" }}>★</span>
-                                        ))}
-                                        <span
+                                    <div>
+                                        <h3
                                             style={{
-                                                color: "#475569",
-                                                marginLeft: "6px",
-                                                fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
+                                                color: "#0b2546",
+                                                fontWeight: 700,
+                                                marginBottom: "6px",
+                                                fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
+                                                lineHeight: "1.3",
                                             }}
                                         >
-                                            {course.rating} {course.viewers}
-                                        </span>
+                                            {course.title}
+                                        </h3>
+
+                                        <div style={{ marginBottom: "8px" }}>
+                                            {[...Array(5)].map((_, i) => (
+                                                <span key={i} style={{ color: i < 4 ? "#FFD700" : "#ccc" }}>★</span>
+                                            ))}
+                                            <span
+                                                style={{
+                                                    color: "#475569",
+                                                    marginLeft: "6px",
+                                                    fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
+                                                }}
+                                            >
+                                                {course.rating} {course.viewers}
+                                            </span>
+                                        </div>
+
+                                        <p
+                                            style={{
+                                                color: "#475569",
+                                                marginBottom: "clamp(10px, 2vw, 15px)",
+                                                fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
+                                                lineHeight: "1.5",
+                                            }}
+                                        >
+                                            Master industry-level skills with real-time mentorship and hands-on projects.
+                                        </p>
                                     </div>
 
-                                    <p
-                                        style={{
-                                            color: "#475569",
-                                            marginBottom: "clamp(10px, 2vw, 15px)",
-                                            fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
-                                            lineHeight: "1.5",
-                                        }}
-                                    >
-                                        Master industry-level skills with real-time mentorship and hands-on projects.
-                                    </p>
-
                                     <button
-                                        onClick={() => navigate("/login")} // ✅ Redirects to signup
+                                        onClick={() => navigate("/login")}
                                         style={{
                                             background: "linear-gradient(90deg, #00c3ff, #007bff)",
                                             color: "#fff",
@@ -920,6 +927,8 @@ const LandingPage = () => {
                                             fontWeight: 600,
                                             fontSize: "clamp(0.85rem, 2vw, 0.95rem)",
                                             boxShadow: "0 6px 15px rgba(0,195,255,0.3)",
+                                            alignSelf: "flex-start",
+                                            marginTop: "auto",
                                         }}
                                     >
                                         View Course
@@ -928,8 +937,16 @@ const LandingPage = () => {
                             </motion.div>
                         ))}
                     </div>
-                </motion.section>
 
+                    {/* ✅ Force exactly 3 cards per row on large screens */}
+                    <style>{`
+    @media (min-width: 1200px) {
+      #courses > div {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+    }
+  `}</style>
+                </motion.section>
 
                 {/* ================= Testimonials ================= */}
                 <motion.section
@@ -978,13 +995,13 @@ const LandingPage = () => {
                     <div
                         style={{
                             display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                            gap: "clamp(40px, 6vw, 100px)", // 🔥 increased horizontal gap
-                            rowGap: "clamp(60px, 8vw, 120px)", // 🔥 increased vertical gap
+                            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                            gap: "clamp(40px, 6vw, 100px)",
+                            rowGap: "clamp(40px, 4vw, 80px)",
                             justifyItems: "center",
                             alignItems: "start",
                             position: "relative",
-                            maxWidth: "1200px",
+                            maxWidth: "1300px",
                             margin: "0 auto",
                             boxSizing: "border-box",
                         }}
@@ -994,9 +1011,10 @@ const LandingPage = () => {
                                 key={i}
                                 style={{
                                     perspective: "1000px",
-                                    width: "85%", // take only 90% width of the column
-                                    maxWidth: "320px", // slightly smaller on desktop
-                                    height: "clamp(200px, 35vw, 240px)",
+                                    // width: "clamp(95%, 32vw, 100%)",
+                                    width: "95%",
+                                    maxWidth: "480px",
+                                    height: "clamp(220px, 35vw, 280px)", // adjusted proportionally
                                     margin: "0 auto",
                                     boxSizing: "border-box",
                                 }}
@@ -1296,7 +1314,6 @@ const LandingPage = () => {
                         </motion.p>
                     </div>
                 </motion.section>
-
 
                 {/* ================= Footer ================= */}
                 <footer
