@@ -122,7 +122,7 @@ const SignUp = () => {
                   field === "fullName"
                     ? "Full Name"
                     : field === "college"
-                    ? "College / Organization"
+                    ? "College / Organization / Not Working"
                     : field === "phone"
                     ? "Phone"
                     : field === "address"

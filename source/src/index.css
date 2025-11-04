@@ -3,6 +3,6 @@ html, body, #root {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow-y: hidden;   /* Hide main vertical scrollbar */
+  overflow-y: auto;   /* Hide main vertical scrollbar */
   overflow-x: hidden;
 }
