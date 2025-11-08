@@ -9,6 +9,7 @@
   box-sizing: border-box;
   font-family: "Montserrat", sans-serif;
   gap: 20px;
+ overflow: hidden; /* prevent page-level scroll */
 }
 
 .course-list-main {
@@ -16,6 +17,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: hidden; /* prevent full-page scroll */
 }
 
 .course-list-inner {
@@ -23,6 +25,7 @@
   flex-direction: row;
   gap: 20px;
   width: 100%;
+   overflow: hidden; /* no scroll here */
 }
 
 .course-list-content {
@@ -30,6 +33,9 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+    overflow-y: auto; /* ✅ scroll only this area */
+  padding-right: 10px; /* avoid cutoff near scrollbar */
+  height: 100%; /* ensures scroll works properly */
 }
 
 /* === Logout Toast === */

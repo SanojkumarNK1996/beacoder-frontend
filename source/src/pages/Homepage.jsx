@@ -239,7 +239,7 @@ const HomePage = () => {
 
         const fetchData = async () => {
             try {
-                const [coursesData, userData] = await Promise.all([
+                const [userData] = await Promise.all([
                     fetchUserProfile(token),
                 ]);
                 setUserName(userData.userName);
