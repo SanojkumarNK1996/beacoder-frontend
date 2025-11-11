@@ -276,19 +276,19 @@ const LandingPage = () => {
         <div
             style={{
                 display: "flex",
-                height: "100vh", // make the page fill viewport
-                overflow: "hidden", // prevent body scroll, we'll scroll inner content
+                height: "100vh", 
+                overflow: "hidden", 
                 background: "#f6f8fb",
-                width: "100vw",           // ensure full viewport width
-                boxSizing: "border-box",  // include paddings in width calculation
+                width: "100vw",          
+                boxSizing: "border-box", 
                 overflowX: "hidden",
             }}
         >
             <div
                 style={{
                     flex: "1 1 auto",
-                    width: "100%",                // ensure full width inside parent
-                    boxSizing: "border-box",      // important to avoid overflow due to padding
+                    width: "100%",               
+                    boxSizing: "border-box",     
                     overflowY: "auto",
                     WebkitOverflowScrolling: "touch",
                     paddingBottom: "40px",
@@ -1316,184 +1316,179 @@ const LandingPage = () => {
                     </div>
                 </motion.section>
 
-{/* ================= Payment Section ================= */}
-<motion.section
-  id="membership"
-  style={{
-    background: "linear-gradient(135deg, #f0f7ff 0%, #dcecff 100%)", // ✅ unchanged background
-    padding: "clamp(40px, 6vw, 100px) clamp(16px, 5vw, 80px)",
-    textAlign: "center",
-    width: "100%",
-    position: "relative",
-    overflow: "hidden",
-  }}
-  initial={{ opacity: 0, y: 60 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.8 }}
-  viewport={{ once: true }}
->
-  <motion.h2
-    style={{
-      fontSize: "clamp(1.8rem, 4vw, 3rem)",
-      color: "#0b2546",
-      fontWeight: 800,
-      marginBottom: "clamp(30px, 5vw, 60px)",
-      position: "relative",
-      display: "inline-block",
-      zIndex: 1,
-      textShadow: "0 3px 6px rgba(0,0,0,0.1)",
-    }}
-  >
-    Premium Membership
-    <span
-      style={{
-        position: "absolute",
-        left: 0,
-        bottom: "-6px",
-        width: "100%",
-        height: "3px",
-        background: "linear-gradient(90deg, #00c3ff 0%, #007bff 100%)", // ✅ unchanged underline
-        borderRadius: "2px",
-      }}
-    ></span>
-  </motion.h2>
+                {/* ================= Payment Section ================= */}
+                <motion.section
+                    id="membership"
+                    style={{
+                        background: "linear-gradient(135deg, #f0f7ff 0%, #dcecff 100%)", // ✅ unchanged background
+                        padding: "clamp(40px, 6vw, 100px) clamp(16px, 5vw, 80px)",
+                        textAlign: "center",
+                        width: "100%",
+                        position: "relative",
+                        overflow: "hidden",
+                    }}
+                    initial={{ opacity: 0, y: 60 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    viewport={{ once: true }}
+                >
+                    <motion.h2
+                        style={{
+                            fontSize: "clamp(1.8rem, 4vw, 3rem)",
+                            color: "#0b2546",
+                            fontWeight: 800,
+                            marginBottom: "clamp(30px, 5vw, 60px)",
+                            position: "relative",
+                            display: "inline-block",
+                            zIndex: 1,
+                            textShadow: "0 3px 6px rgba(0,0,0,0.1)",
+                        }}
+                    >
+                        Premium Membership
+                        <span
+                            style={{
+                                position: "absolute",
+                                left: 0,
+                                bottom: "-6px",
+                                width: "100%",
+                                height: "3px",
+                                background: "linear-gradient(90deg, #00c3ff 0%, #007bff 100%)", // ✅ unchanged underline
+                                borderRadius: "2px",
+                            }}
+                        ></span>
+                    </motion.h2>
 
-  <motion.p
-    style={{
-      fontSize: "clamp(1rem, 2vw, 1.3rem)",
-      maxWidth: "850px",
-      margin: "0 auto 50px",
-      color: "#475569",
-      lineHeight: 1.8,
-    }}
-  >
-    Unlock unlimited access to all <strong>courses</strong>,{" "}
-    <strong>assignments</strong>, <strong>mock interviews</strong>, and{" "}
-    <strong>live mentorship</strong> sessions. Learn at your own pace and
-    achieve your dream job with full premium benefits.
-  </motion.p>
+                    <motion.p
+                        style={{
+                            fontSize: "clamp(1rem, 2vw, 1.3rem)",
+                            maxWidth: "850px",
+                            margin: "0 auto 50px",
+                            color: "#475569",
+                            lineHeight: 1.8,
+                        }}
+                    >
+                        Unlock unlimited access to all <strong>courses</strong>,{" "}
+                        <strong>assignments</strong>, <strong>mock interviews</strong>, and{" "}
+                        <strong>live mentorship</strong> sessions. Learn at your own pace and
+                        achieve your dream job with full premium benefits.
+                    </motion.p>
 
-  {/* === Inner Card (White + Golden Glow Border on Hover) === */}
-  <motion.div
-    style={{
-      background: "rgba(255, 255, 255, 1)", // ✅ pure white background
-      backdropFilter: "blur(15px)",
-      WebkitBackdropFilter: "blur(15px)",
-      borderRadius: "24px",
-      border: "1px solid rgba(255, 255, 255, 0.5)", // subtle white border initially
-      boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-      padding: "clamp(30px, 5vw, 50px)",
-      maxWidth: "500px",
-      margin: "0 auto",
-      position: "relative",
-      transition: "all 0.3s ease-in-out",
-    }}
-    whileHover={{
-      scale: 1.03,
-      border: "1px solid rgba(255, 215, 0, 0.9)", // golden border on hover
-      boxShadow: "0 0 25px rgba(255, 215, 0, 0.6)", // glowing effect
-    }}
-  >
-    <div style={{ position: "relative", zIndex: 2 }}>
-      <h3
-        style={{
-          color: "#0b2546",
-          fontWeight: 700,
-          fontSize: "clamp(1.4rem, 3vw, 1.8rem)",
-          marginBottom: "10px",
-        }}
-      >
-        Go Premium 🚀
-      </h3>
+                    {/* === Inner Card (White + Golden Glow Border on Hover) === */}
+                    <motion.div
+                        style={{
+                            background: "rgba(255, 255, 255, 1)", // ✅ pure white background
+                            backdropFilter: "blur(15px)",
+                            WebkitBackdropFilter: "blur(15px)",
+                            borderRadius: "24px",
+                            border: "1px solid rgba(255, 255, 255, 0.5)", // subtle white border initially
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                            padding: "clamp(30px, 5vw, 50px)",
+                            maxWidth: "500px",
+                            margin: "0 auto",
+                            position: "relative",
+                            transition: "all 0.3s ease-in-out",
+                        }}
+                        whileHover={{
+                            scale: 1.03,
+                            border: "1px solid rgba(255, 215, 0, 0.9)", // golden border on hover
+                            boxShadow: "0 0 25px rgba(255, 215, 0, 0.6)", // glowing effect
+                        }}
+                    >
+                        <div style={{ position: "relative", zIndex: 2 }}>
+                            <h3
+                                style={{
+                                    color: "#0b2546",
+                                    fontWeight: 700,
+                                    fontSize: "clamp(1.4rem, 3vw, 1.8rem)",
+                                    marginBottom: "10px",
+                                }}
+                            >
+                                Go Premium 🚀
+                            </h3>
 
-      <p
-        style={{
-          color: "#475569",
-          fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
-          marginBottom: "25px",
-          maxWidth: "340px",
-          marginInline: "auto",
-        }}
-      >
-        To view complete course details and gain full access, upgrade to our
-        Premium Membership today.
-      </p>
+                            <p
+                                style={{
+                                    color: "#475569",
+                                    fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+                                    marginBottom: "25px",
+                                    maxWidth: "340px",
+                                    marginInline: "auto",
+                                }}
+                            >
+                                To view complete course details and gain full access, upgrade to our
+                                Premium Membership today.
+                            </p>
 
-      <AnimatePresence>
-        {showQr && (
-          <motion.div
-            key="qr"
-            initial={{ opacity: 0, scale: 0.8, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 30 }}
-            transition={{ duration: 0.5 }}
-            style={{
-              marginBottom: "clamp(25px, 4vw, 40px)",
-              position: "relative",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
+                            <AnimatePresence>
+                                {showQr && (
+                                    <motion.div
+                                        key="qr"
+                                        initial={{ opacity: 0, scale: 0.8, y: 30 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.8, y: 30 }}
+                                        transition={{ duration: 0.5 }}
+                                        style={{
+                                            marginBottom: "clamp(25px, 4vw, 40px)",
+                                            position: "relative",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}
+                                    >
 
-            <motion.img
-              src="https://docs.lightburnsoftware.com/legacy/img/QRCode/ExampleCode.png"
-              alt="QR Code"
-              style={{
-                width: "200px",
-                height: "200px",
-                objectFit: "contain",
-                margin: "0 auto",
-                display: "block",
-                borderRadius: "16px",
-                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-                background: "#fff",
-                position: "relative",
-                zIndex: 2,
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+                                        <motion.img
+                                            src="https://docs.lightburnsoftware.com/legacy/img/QRCode/ExampleCode.png"
+                                            alt="QR Code"
+                                            style={{
+                                                width: "200px",
+                                                height: "200px",
+                                                objectFit: "contain",
+                                                margin: "0 auto",
+                                                display: "block",
+                                                borderRadius: "16px",
+                                                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+                                                background: "#fff",
+                                                position: "relative",
+                                                zIndex: 2,
+                                            }}
+                                        />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
-      {/* ✅ Button (Unchanged Blue Gradient) */}
-      <motion.button
-        onClick={() => setShowQr((prev) => !prev)}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        style={{
-          background: "linear-gradient(90deg, #00c3ff, #007bff)",
-          color: "#fff",
-          border: "none",
-          padding: "clamp(10px, 2vw, 12px) clamp(24px, 3vw, 30px)",
-          borderRadius: "30px",
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: "clamp(0.9rem, 2vw, 1rem)",
-          boxShadow: "0 6px 15px rgba(0,195,255,0.3)",
-        }}
-      >
-        {showQr ? "Hide QR Code" : "Generate QR Code"}
-      </motion.button>
+                            {/* ✅ Button (Unchanged Blue Gradient) */}
+                            <motion.button
+                                onClick={() => setShowQr((prev) => !prev)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                style={{
+                                    background: "linear-gradient(90deg, #00c3ff, #007bff)",
+                                    color: "#fff",
+                                    border: "none",
+                                    padding: "clamp(10px, 2vw, 12px) clamp(24px, 3vw, 30px)",
+                                    borderRadius: "30px",
+                                    cursor: "pointer",
+                                    fontWeight: 600,
+                                    fontSize: "clamp(0.9rem, 2vw, 1rem)",
+                                    boxShadow: "0 6px 15px rgba(0,195,255,0.3)",
+                                }}
+                            >
+                                {showQr ? "Hide QR Code" : "Generate QR Code"}
+                            </motion.button>
 
-      <p
-        style={{
-          fontSize: "0.85rem",
-          marginTop: "18px",
-          color: "#475569",
-        }}
-      >
-        Scan the QR code to complete your payment and unlock your premium
-        access instantly.
-      </p>
-    </div>
-  </motion.div>
-</motion.section>
-
-
-
-
-
+                            <p
+                                style={{
+                                    fontSize: "0.85rem",
+                                    marginTop: "18px",
+                                    color: "#475569",
+                                }}
+                            >
+                                Scan the QR code to complete your payment and unlock your premium
+                                access instantly.
+                            </p>
+                        </div>
+                    </motion.div>
+                </motion.section>
 
                 {/* ================= Footer ================= */}
                 <footer
@@ -1554,7 +1549,7 @@ const LandingPage = () => {
                                 letterSpacing: "1px",
                             }}
                         >
-                            Learn2Code
+                            BeACoder
                         </h2>
 
                         {/* Description */}
@@ -1630,7 +1625,7 @@ const LandingPage = () => {
                                 padding: "0 10px",
                             }}
                         >
-                            © {new Date().getFullYear()} <strong>Learn2Code</strong> — All Rights Reserved
+                            © {new Date().getFullYear()} <strong>BeACoder</strong> — All Rights Reserved
                         </p>
                     </div>
                 </footer>

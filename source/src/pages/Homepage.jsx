@@ -514,7 +514,6 @@ const HomePage = () => {
                         </motion.div>
                     </motion.section>
 
-
                     {/* ================= What You Should Do ================= */}
                     <motion.section
                         style={{
@@ -1301,7 +1300,7 @@ const HomePage = () => {
                                     letterSpacing: "1px",
                                 }}
                             >
-                                Learn2Code
+                                BeACoder
                             </h2>
                             <p
                                 style={{
@@ -1358,7 +1357,7 @@ const HomePage = () => {
 
                             {/* Bottom Text */}
                             <p style={{ fontSize: "0.9rem", color: "#b8c7e0" }}>
-                                © {new Date().getFullYear()} <strong>Learn2Code</strong> — All Rights Reserved
+                                © {new Date().getFullYear()} <strong>BeACoder</strong> — All Rights Reserved
                                 <br />
                             </p>
                         </div>

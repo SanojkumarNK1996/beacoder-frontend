@@ -32,10 +32,10 @@ export const Sidebar = ({ hovered, setHovered }) => {
         >
             <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: "45px" }}>
                 {/* Logo Row */}
-                <div style={{ height: "32px", display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "28px", fontWeight: "900", color: "#367cfe" }}>Learn</span>
-                    <span style={{ fontSize: "28px", fontWeight: "900", color: "#000" }}>2</span>
-                    <span style={{ fontSize: "28px", fontWeight: "900", color: "#ffb74d" }}>Code</span>
+                <div style={{ height: "32px", display: "flex", flexDirection: "row", alignItems: "center", gap: "2px" }}>
+                    <span style={{ fontSize: "28px", fontWeight: "900", color: "#367cfe" }}>Be</span>
+                    <span style={{ fontSize: "28px", fontWeight: "900", color: "#000" }}>A</span>
+                    <span style={{ fontSize: "28px", fontWeight: "900", color: "#ffb74d" }}>Coder</span>
                 </div>
                 {/* Sidebar Menu */}
                 <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "16px" }}>

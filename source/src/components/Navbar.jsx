@@ -38,7 +38,7 @@ const Navbar = () => {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    gap: "5px",
+    gap: "2px",
     cursor: "pointer",
   };
 
@@ -109,9 +109,9 @@ const Navbar = () => {
     <nav style={navStyle}>
       {/* ✅ Logo */}
       <div style={logoContainer} onClick={() => handleScroll("home")}>
-        <span style={logoText1}>Learn</span>
-        <span style={logoText2}>2</span>
-        <span style={logoText3}>Code</span>
+        <span style={logoText1}>Be</span>
+        <span style={logoText2}>A</span>
+        <span style={logoText3}>Coder</span>
       </div>
 
       {/* ✅ Menu */}
