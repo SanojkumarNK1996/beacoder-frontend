@@ -26,6 +26,7 @@ export async function fetchSubtopicsAndQuiz(id, section, token) {
 }
 
 export function fetchSubtopicContents(courseId, topicId, subtopicId, token) {
+  console.log({courseId,topicId,subtopicId})
   return axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/courses/${courseId}/topics/${topicId}/subtopics/${subtopicId}/contents`, {
     headers: { Authorization: `Bearer ${token}` }
   });
