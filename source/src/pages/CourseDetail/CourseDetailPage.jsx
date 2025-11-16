@@ -14,6 +14,7 @@ import {
   fetchSubtopicContents
 } from "../../api/CourseDetailPage";
 import "./CourseDetailPage.css";
+import { InterviewQuiz } from "../../components/InterviewQuiz";
 
 const quizQuestions = [
   { question: "What is the correct way to declare a variable in Java?", options: ["int num = 5;", "num int = 5;", "integer num = 5;", "var int num = 5;"], answer: "int num = 5;" },
@@ -39,6 +40,10 @@ const CourseDetailPage = () => {
   const [subtopicLoading, setSubtopicLoading] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [selectedQuizPopup, setSelectedQuizPopup] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(1);
+
+  const [linearContent, setLinearContent] = useState([]);
+  const [visibleIndex, setVisibleIndex] = useState(0);
 
   const videoBlock = contentData.find(item => item.dataType === "youtube_video");
 
@@ -56,6 +61,45 @@ const CourseDetailPage = () => {
         console.error(err);
       });
   }, [id]);
+
+  const filteredContent = contentData
+    .filter((item) => item.dataType !== "youtube_video")
+    .sort((a, b) => a.displayOrder - b.displayOrder);
+
+  useEffect(() => {
+    if (!contentData || contentData.length === 0) return;
+
+    const filteredContent = contentData
+      .filter((item) => item.dataType !== "youtube_video")
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+
+    const expandedList = [];
+
+    filteredContent.forEach((item) => {
+      expandedList.push({ ...item, isQuiz: false });
+
+      if (item.Quizzes && item.Quizzes.length > 0) {
+        item.Quizzes.forEach((quiz) => {
+          expandedList.push({
+            ...quiz,
+            isQuiz: true,
+            parentTitle: item.title,
+          });
+        });
+      }
+    });
+
+    setLinearContent(expandedList);
+
+    // ✅ Initial index should be 0 if first is valid content
+    const firstNonVideoIndex = expandedList.findIndex(
+      (item) => item.dataType !== "youtube_video"
+    );
+    setVisibleIndex(firstNonVideoIndex !== -1 ? firstNonVideoIndex : 0);
+  }, [contentData]);
+
+
+
 
   const handleQuizSubmit = () => {
     setShowQuiz(false);
@@ -108,6 +152,16 @@ const CourseDetailPage = () => {
       });
   };
 
+  // const filteredContent = contentData
+  //   .filter((item) => item.dataType !== "youtube_video")
+  //   .sort((a, b) => a.displayOrder - b.displayOrder);
+
+  const handleNext = () => {
+    setVisibleIndex((prev) =>
+      prev < linearContent.length - 1 ? prev + 1 : prev
+    );
+  };
+
   if (loading || subtopicLoading || contentLoading) {
     return (
       <MainPageLoader
@@ -116,12 +170,13 @@ const CourseDetailPage = () => {
           loading
             ? "Loading course details..."
             : subtopicLoading
-            ? "Loading subtopics..."
-            : "Loading content..."
+              ? "Loading subtopics..."
+              : "Loading content..."
         }
       />
     );
   }
+  console.log({ contentData })
 
   return (
     <div className="course-detail-container">
@@ -158,9 +213,8 @@ const CourseDetailPage = () => {
                       return (
                         <React.Fragment key={section.title}>
                           <li
-                            className={`syllabus-item ${
-                              openIndex === idx ? "active" : ""
-                            }`}
+                            className={`syllabus-item ${openIndex === idx ? "active" : ""
+                              }`}
                             onClick={() =>
                               isQuiz
                                 ? setShowQuiz(true)
@@ -215,61 +269,60 @@ const CourseDetailPage = () => {
                                   topicObj.subtopics
                                 )
                                   ? topicObj.subtopics
-                                      .sort(
-                                        (a, b) => a.displayOrder - b.displayOrder
-                                      )
-                                      .map(sub => (
-                                        <li
-                                          key={`subtopic-${sub.id}`}
-                                          className={`subtopic-item ${
-                                            selectedSubtopic === sub.title
-                                              ? "selected"
-                                              : ""
+                                    .sort(
+                                      (a, b) => a.displayOrder - b.displayOrder
+                                    )
+                                    .map(sub => (
+                                      <li
+                                        key={`subtopic-${sub.id}`}
+                                        className={`subtopic-item ${selectedSubtopic === sub.title
+                                          ? "selected"
+                                          : ""
                                           }`}
-                                          onClick={e => {
-                                            e.stopPropagation();
-                                            handleSubtopicClick(
-                                              id,
-                                              topicObj.id,
-                                              sub.id,
-                                              sub.title
-                                            );
-                                          }}
-                                        >
-                                          <span className="subtopic-icon">
-                                            <FaRegFileAlt />
-                                          </span>
-                                          <span className="subtopic-title">
-                                            {sub.title}
-                                          </span>
-                                        </li>
-                                      ))
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          handleSubtopicClick(
+                                            id,
+                                            topicObj.id,
+                                            sub.id,
+                                            sub.title
+                                          );
+                                        }}
+                                      >
+                                        <span className="subtopic-icon">
+                                          <FaRegFileAlt />
+                                        </span>
+                                        <span className="subtopic-title">
+                                          {sub.title}
+                                        </span>
+                                      </li>
+                                    ))
                                   : [];
 
                                 const quizzes = Array.isArray(topicObj.quiz)
                                   ? topicObj.quiz
-                                      .sort(
-                                        (a, b) => a.displayOrder - b.displayOrder
-                                      )
-                                      .map(quiz => (
-                                        <li
-                                          key={`quiz-${quiz.id}`}
-                                          className="quiz-item"
-                                          onClick={e => {
-                                            e.stopPropagation();
-                                            setSelectedQuizPopup(
-                                              quiz.questionData
-                                            );
-                                          }}
-                                        >
-                                          <span className="quiz-icon">
-                                            <FaTasks />
-                                          </span>
-                                          <span className="quiz-title">
-                                            {quiz.title}
-                                          </span>
-                                        </li>
-                                      ))
+                                    .sort(
+                                      (a, b) => a.displayOrder - b.displayOrder
+                                    )
+                                    .map(quiz => (
+                                      <li
+                                        key={`quiz-${quiz.id}`}
+                                        className="quiz-item"
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setSelectedQuizPopup(
+                                            quiz.questionData
+                                          );
+                                        }}
+                                      >
+                                        <span className="quiz-icon">
+                                          <FaTasks />
+                                        </span>
+                                        <span className="quiz-title">
+                                          {quiz.title}
+                                        </span>
+                                      </li>
+                                    ))
                                   : [];
 
                                 return [...subtopics, ...quizzes];
@@ -285,7 +338,7 @@ const CourseDetailPage = () => {
 
           {selectedSubtopic && (
             <div className="right-container">
-
+              {/* Back Button */}
               <div className="back-button-container">
                 <button
                   className="back-button"
@@ -304,13 +357,11 @@ const CourseDetailPage = () => {
                 </span>
               </div>
 
+              {/* Video Block */}
               {videoBlock && (
                 <div className="video-player">
                   <iframe
-                    src={videoBlock.data.videoUrl.replace(
-                      "watch?v=",
-                      "embed/"
-                    )}
+                    src={videoBlock.data.videoUrl.replace("watch?v=", "embed/")}
                     title={videoBlock.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
@@ -318,54 +369,114 @@ const CourseDetailPage = () => {
                 </div>
               )}
 
+              {/* Description Block */}
               <div className="description-block">
-                {contentData.length &&
-                  contentData
-                    .filter(item => item.dataType !== "youtube_video")
-                    .sort((a, b) => a.displayOrder - b.displayOrder)
-                    .map(item => (
-                      <div key={item.id} style={{ marginBottom: "36px" }}>
-                        {item.dataType !== "mcq_set" && (
-                          <div className="description-title">{item.title}</div>
-                        )}
-                        {item.dataType === "notes" && (
-                          // Render rich HTML coming from the API. We assume the API returns
-                          // sanitized HTML. If the API cannot guarantee sanitization,
-                          // sanitize on the client before injecting.
-                          <div
-                            className="description-text"
-                            dangerouslySetInnerHTML={{ __html: item.data.description }}
-                          />
-                        )}
-                        {item.data.codeSnippet && (
-                          <div className="code-block">
-                            <div className="code-header">code</div>
-                            <pre className="code-body">
-                              {item.data.codeSnippet}
-                            </pre>
-                          </div>
-                        )}
-                        {item.dataType === "mcq_set" && (
-                          <div
-                            style={{
-                              width: "100%",
-                              display: "flex",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <MCQSet questions={item.data.questions} />
-                          </div>
+                {linearContent.length > 0 && (
+                  <div style={{ marginBottom: "36px" }}>
+                    {linearContent.slice(0, visibleIndex + 1).map((item, index) => (
+                      <div key={index} style={{ marginBottom: "36px" }}>
+                        {!item.isQuiz ? (
+                          <>
+                            {item.dataType !== "mcq_set" &&
+                              item.dataType !== "youtube_video" && (
+                                <div className="description-title">{item.title}</div>
+                              )}
+
+                            {item.dataType === "notes" && (
+                              <div
+                                className="description-text"
+                                dangerouslySetInnerHTML={{
+                                  __html: item.data.description,
+                                }}
+                              />
+                            )}
+
+                            {item.data.codeSnippet && (
+                              <div className="code-block">
+                                <div className="code-header">code</div>
+                                <pre className="code-body">
+                                  {item.data.codeSnippet}
+                                </pre>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {item.type === "mcq_set" ? (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  marginBottom: "20px",
+                                }}
+                              >
+                                <MCQSet questions={item.questionData} />
+                              </div>
+                            ) : (
+                              <div style={{ marginBottom: "20px" }}>
+                                <InterviewQuiz questions={item.questionData} />
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+
+
+
+                {/* Next Button */}
+                {/* Next Button — hide when at the last element */}
+                {linearContent.length > 0 && visibleIndex < linearContent.length - 1 && (
+                  <div style={{ textAlign: "center", marginTop: "40px" }}>
+                    <button
+                      onClick={handleNext}
+                      disabled={visibleIndex >= linearContent.length - 1}
+                      style={{
+                        backgroundColor: "#367cfe",
+                        color: "white",
+                        padding: "clamp(10px, 2vw, 14px) clamp(20px, 3vw, 36px)",
+                        fontSize: "clamp(14px, 2vw, 18px)",
+                        fontWeight: "600",
+                        border: "none",
+                        borderRadius: "12px",
+                        cursor:
+                          visibleIndex >= linearContent.length - 1 ? "not-allowed" : "pointer",
+                        opacity: visibleIndex >= linearContent.length - 1 ? 0.6 : 1,
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseOver={(e) => {
+                        if (visibleIndex < linearContent.length - 1) {
+                          e.target.style.backgroundColor = "white";
+                          e.target.style.color = "#367cfe";
+                          e.target.style.border = "2px solid black";
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (visibleIndex < linearContent.length - 1) {
+                          e.target.style.backgroundColor = "#367cfe";
+                          e.target.style.color = "white";
+                          e.target.style.border = "none";
+                        }
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+
+
+
+
               </div>
 
+              {/* Notes Section */}
               <div className="notes-section">
                 <h3>Take Notes</h3>
                 <textarea placeholder="Write your notes here..." />
-                <button onClick={() => alert("Notes submitted ✅")}>
-                  Submit
-                </button>
+                <button onClick={() => alert("Notes submitted ✅")}>Submit</button>
               </div>
             </div>
           )}
