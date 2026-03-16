@@ -1,11 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import Signup from './pages/SignUp/SignUp.jsx'
 import CourseDetailPage from './pages/CourseDetail/CourseDetailPage.jsx'
+import SubtopicContentPage from './pages/CourseDetail/SubtopicContentPage.jsx'
 import CourseList from './pages/CourseList/CourseList.jsx'
 import Login from './pages/Login/Login.jsx'
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from "./pages/Homepage.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
+import AssignmentPage from "./pages/Assignment/AssignmentPage.jsx";
 
 function App() {
   return (
@@ -32,6 +34,16 @@ function App() {
             <CourseDetailPage />
           </ProtectedRoute>
         } />
+        <Route path="/courses/:id/topics" element={
+          <ProtectedRoute>
+            <CourseDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/course/:cId/topic/:tId/sub/:sId" element={
+          <ProtectedRoute>
+            <SubtopicContentPage />
+          </ProtectedRoute>
+        } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <CourseList />
@@ -39,7 +51,7 @@ function App() {
         } />
         <Route path="/assignments" element={
           <ProtectedRoute>
-            <CourseList />
+            <AssignmentPage />
           </ProtectedRoute>
         } />
         <Route path="/discussions" element={

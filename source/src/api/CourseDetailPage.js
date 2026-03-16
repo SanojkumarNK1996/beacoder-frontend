@@ -31,3 +31,18 @@ export function fetchSubtopicContents(courseId, topicId, subtopicId, token) {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
+
+/**
+ * Mark a content block (or quiz) as completed for the current user
+ * @param {string|number} contentBlockId
+ * @param {string} token - JWT auth token
+ */
+export function completeContentBlock(contentBlockId, token) {
+  return axios.post(
+    `${import.meta.env.VITE_BASE_URL}/api/v1/user/content/${contentBlockId}/complete`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+}
