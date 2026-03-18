@@ -6,7 +6,7 @@ import { CourseListRightSidebar } from "../../components/CourseListRightSidebar"
 import NewCourseContainer from "../../components/NewCoursesContainer";
 import MainPageLoader from "../../components/MainPageLoader";
 import "./CourseList.css";
-import { fetchCourses, fetchUserProfile } from "../../api/CourseList"; // 👈 Import API functions
+import { fetchCourses, fetchUserProfile, fetchEnrolledCourses, enrollCourse } from "../../api/CourseList"; 
 
 // ✅ Logout Toast Component
 const LogoutToast = ({ show }) => {
@@ -52,7 +52,9 @@ const CourseList = () => {
   const [hovered, setHovered] = useState(null);
   const [active, setActive] = useState(0);
   const [hoveredCourse, setHoveredCourse] = useState(null);
+  const [enrolledHoveredCourse, setEnrolledHoveredCourse] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [userName, setUserName] = useState("User");
   const [showLogoutToast, setShowLogoutToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,12 +65,16 @@ const CourseList = () => {
 
     const fetchData = async () => {
       try {
-        const [coursesData, userData] = await Promise.all([
+        const [coursesData, userData, enrolledData] = await Promise.all([
           fetchCourses(token),
           fetchUserProfile(token),
+          fetchEnrolledCourses(token),
         ]);
         setCourses(coursesData);
         setUserName(userData.userName);
+        // Normalize enrolled courses so each has an `id` field taken from `courseId`
+        const normalizedEnrolled = (enrolledData || []).map(c => ({ ...c, id: c.courseId }));
+        setEnrolledCourses(normalizedEnrolled);
       } catch (err) {
         console.error(err);
       } finally {
@@ -107,12 +113,34 @@ const CourseList = () => {
 
         <div className="course-list-inner">
           <div className="course-list-content">
+            {enrolledCourses && enrolledCourses.length > 0 && (
+              <NewCourseContainer
+                courses={enrolledCourses}
+                hoveredCourse={enrolledHoveredCourse}
+                setHoveredCourse={setEnrolledHoveredCourse}
+                courseText="Enrolled Courses"
+                buttonText="Continue"
+              />
+            )}
+
             <NewCourseContainer
               courses={courses}
               hoveredCourse={hoveredCourse}
               setHoveredCourse={setHoveredCourse}
               courseText="Courses"
-              buttonText="View"
+              buttonText="Enroll"
+              onButtonClick={async (course) => {
+                const token = localStorage.getItem("authToken");
+                try {
+                  await enrollCourse(token, course.id || course.courseId || course._id);
+                  // refresh enrolled list
+                  const enrolled = await fetchEnrolledCourses(token);
+                  const normalizedEnrolled = (enrolled || []).map(c => ({ ...c, id: c.courseId }));
+                  setEnrolledCourses(normalizedEnrolled);
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
             />
           </div>
 

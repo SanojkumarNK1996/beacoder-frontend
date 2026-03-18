@@ -1,244 +1,204 @@
-import { useState, useRef } from "react";
-import { FaSearch, FaBell, FaUserCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useState, useRef, useEffect } from "react";
+import { FaBell, FaUserCircle, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
 
-// TopBar component
 export const TopBar = ({ userName, onLogout }) => {
     const [showPopup, setShowPopup] = useState(false);
-    const profileBtnRef = useRef(null);
+    const [displayedText, setDisplayedText] = useState("");
+    const fullText = `Hello ${userName} Welcome Back`;
+
+    useEffect(() => {
+        if (displayedText.length < fullText.length) {
+            const timer = setTimeout(() => {
+                setDisplayedText(fullText.slice(0, displayedText.length + 1));
+            }, 80);
+            return () => clearTimeout(timer);
+        } else {
+            // Reset after 2 seconds to loop animation
+            const resetTimer = setTimeout(() => {
+                setDisplayedText("");
+            }, 2000);
+            return () => clearTimeout(resetTimer);
+        }
+    }, [displayedText, fullText]);
 
     return (
-        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px", width: "100%", position: "relative" }}>
-            {/* Search Bar */}
-            <div
-                style={{
-                    background: "#fff",
-                    borderRadius: "16px",
-                    height: "48px",
-                    minWidth: "220px",
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "8px 16px",
-                    flex: 1,
-                    transition: "box-shadow 0.2s, border 0.2s",
-                }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(54,124,254,0.25)"}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
-            >
-                <div style={{ height: "24px", width: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <FaSearch style={{ fontSize: "20px", color: "#000" }} />
-                </div>
-                <input
-                    type="text"
-                    placeholder="Search......"
-                    style={{
-                        border: "none",
-                        outline: "none",
-                        background: "transparent",
-                        fontSize: "18px",
-                        fontWeight: "500",
-                        color: "#1e1e1e",
-                        width: "100%",
-                    }}
-                />
-            </div>
-            {/* Notification Button */}
-            <button
-                style={{
-                    background: "#fff",
-                    borderRadius: "16px",
-                    height: "48px",
-                    width: "48px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "0",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "box-shadow 0.2s, background 0.2s",
-                    marginLeft: "16px",
-                }}
-                onMouseEnter={e => {
-                    e.currentTarget.style.boxShadow = "0 4px 16px rgba(54,124,254,0.25)";
-                    e.currentTarget.style.background = "#f0f6ff";
-                }}
-                onMouseLeave={e => {
-                    e.currentTarget.style.boxShadow = "none";
-                    e.currentTarget.style.background = "#fff";
-                }}
-                aria-label="Notifications"
-            >
-                <FaBell style={{ fontSize: "32px", color: "#367cfe" }} />
-            </button>
-            {/* Profile Button */}
-            <div
-                ref={profileBtnRef}
-                style={{
-                    height: "48px",
-                    width: "100px",
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: "8px",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "background 0.2s",
-                    padding: 0,
-                    marginLeft: "16px",
-                    marginRight: "16px",
-                    position: "relative",
-                    userSelect: "none"
-                }}
-                onClick={() => {
-                    setShowPopup(!showPopup);
-                }}
-                aria-label="Profile"
-            >
-                <div
-                    style={{
-                        height: "36px",
-                        width: "36px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%",
-                        background: "#f0f6ff",
-                        transition: "background 0.2s",
-                        cursor: "pointer"
-                    }}
-                >
-                    <FaUserCircle style={{ fontSize: "26px", color: "#367cfe" }} />
-                </div>
-                <span
-                    style={{
-                        fontSize: "18px",
-                        fontWeight: "600",
-                        color: "#000",
-                        whiteSpace: "nowrap",
-                        cursor: "pointer"
-                    }}
-                >
-                    {userName}
+        <>
+        <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            padding: "10px 20px", 
+            background: "rgba(255, 255, 255, 0.8)", 
+            backdropFilter: "blur(10px)",
+            borderBottom: "1px solid rgba(227, 234, 252, 0.8)",
+            gap: "15px" 
+        }}>
+            {/* Minimalist Welcome Chip */}
+            <div style={{
+                background: "rgba(255, 255, 255, 0.8)",
+                backdropFilter: "blur(10px)",
+                padding: "12px 28px",
+                borderRadius: "50px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "14px",
+                flex: "0 0 auto",
+                maxWidth: "600px",
+                position: "relative",
+                overflow: "hidden",
+                transition: "all 0.3s ease"
+            }}>
+
+                <span style={{ fontSize: "28px", animation: "bounce 2s infinite", position: "relative", zIndex: 1 }}>✨</span>
+                <span style={{ fontWeight: "600", color: "#367cfe", fontSize: "20px", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: "0", minHeight: "28px" }}>
+                    <span style={{ display: "inline-block", minWidth: "350px", paddingRight: "6px", fontFamily: "'Courier New', monospace", letterSpacing: "0.5px" }}>
+                        {displayedText}
+                    </span>
                 </span>
-                {/* Popup INSIDE profile button container */}
+            </div>
+
+            {/* Spacer to push icons to the right */}
+            <div style={{ flex: 1 }}></div>
+
+            {/* Notification Icon */}
+            <div style={{ position: "relative", cursor: "pointer" }}>
+                <FaBell style={{ fontSize: "28px", color: "#64748b", transition: "all 0.3s" }} />
+                <span style={{
+                    position: "absolute",
+                    top: "-2px",
+                    right: "-2px",
+                    width: "10px",
+                    height: "10px",
+                    background: "#ff4d4d",
+                    borderRadius: "50%",
+                    border: "2px solid #fff",
+                    animation: "pulse 2s infinite"
+                }}></span>
+            </div>
+
+            {/* Profile Section */}
+            <div 
+                style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "12px", 
+                    cursor: "pointer", 
+                    padding: "8px 14px",
+                    borderRadius: "12px",
+                    transition: "background 0.2s",
+                    position: "relative"
+                }}
+                onClick={() => setShowPopup(!showPopup)}
+                onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+                <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "linear-gradient(135deg, #367cfe 0%, #5ab1ff 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "700", fontSize: "18px" }}>
+                    {userName.charAt(0).toUpperCase()}
+                </div>
+                <FaChevronDown style={{ fontSize: "16px", color: "#64748b", transition: "transform 0.2s", transform: showPopup ? "rotate(180deg)" : "rotate(0deg)" }} />
+
                 {showPopup && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: "120%",
-                            left: "-220px",
-                            background: "#fff",
-                            borderRadius: "16px",
-                            boxShadow: "0 8px 32px rgba(54,124,254,0.18)",
-                            padding: "32px 40px",
-                            minWidth: "240px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: "18px",
-                            zIndex: 1000,
-                            border: "1.5px solid #e3eafc",
-                            animation: "popBounce 0.4s cubic-bezier(0.4,0,0.2,1)",
-                        }}
-                        onMouseLeave={() => setShowPopup(false)}
-                    >
-                        <FaUserCircle style={{
-                            fontSize: "54px",
-                            color: "#367cfe",
-                            marginBottom: "8px",
-                            background: "#f6f8fc",
-                            borderRadius: "50%",
-                            boxShadow: "0 2px 8px #e3eafc",
-                            transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
-                        }} />
-                        <span style={{
-                            fontSize: "22px",
-                            fontWeight: 700,
-                            color: "#222",
-                            marginBottom: "8px",
-                            letterSpacing: "1px",
-                            textShadow: "0 2px 8px #e3eafc"
-                        }}>
-                            {userName}
-                        </span>
-                        <button
-                            style={{
-                                background: "linear-gradient(90deg, #367cfe 0%, #5ab1ff 100%)",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "8px",
-                                padding: "12px 32px",
-                                fontSize: "16px",
-                                fontWeight: 600,
+                    <div style={{
+                        position: "absolute",
+                        top: "60px",
+                        right: "20px",
+                        width: "220px",
+                        background: "#fff",
+                        borderRadius: "14px",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                        padding: "12px",
+                        zIndex: 100,
+                        border: "1px solid #f1f5f9",
+                        animation: "slideDownFade 0.3s ease"
+                    }}>
+                        <div style={{ padding: "12px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+                            <p style={{ margin: 0, fontWeight: "700", fontSize: "16px" }}>{userName}</p>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>User Account</p>
+                        </div>
+                        <button 
+                            onClick={onLogout}
+                            style={{ 
+                                width: "100%", 
+                                padding: "12px", 
+                                textAlign: "left", 
+                                background: "none", 
+                                border: "none", 
+                                color: "#ef4444", 
                                 cursor: "pointer",
-                                boxShadow: "0 2px 8px rgba(54,124,254,0.15)",
-                                marginTop: "8px",
-                                letterSpacing: "1px",
-                                transition: "background 0.2s, box-shadow 0.2s"
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                fontWeight: "600",
+                                fontSize: "15px",
+                                transition: "background 0.2s",
+                                borderRadius: "8px"
                             }}
-                            onClick={() => {
-                                setShowPopup(false);
-                                if (onLogout) onLogout();
-                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = "#fff5f5"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                         >
-                            Logout
+                            <FaSignOutAlt style={{ fontSize: "16px" }} /> Logout
                         </button>
                     </div>
                 )}
             </div>
-        {/* Add keyframes for fadeScaleIn animation */}
-        <style>{`
-            @keyframes fadeScaleIn {
-                0% {
-                    opacity: 0;
-                    transform: scale(0.85) translateY(20px);
-                }
-                100% {
-                    opacity: 1;
-                    transform: scale(1) translateY(0);
-                }
-            }
-            @keyframes slideDownFade {
-                0% {
-                    opacity: 0;
-                    transform: translateY(-30px) scale(0.95);
-                }
-                100% {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                }
-            }
-            @keyframes popBounce {
-                0% {
-                  opacity: 0;
-                  transform: scale(0.7);
-                }
-                60% {
-                  opacity: 1;
-                  transform: scale(1.05);
-                }
-                80% {
-                  transform: scale(0.98);
-                }
-                100% {
-                  opacity: 1;
-                  transform: scale(1);
-                }
-              }
-              @keyframes flipIn {
-                0% {
-                  opacity: 0;
-                  transform: rotateY(-90deg) scale(0.8);
-                }
-                100% {
-                  opacity: 1;
-                  transform: rotateY(0deg) scale(1);
-                }
-              }
-        `}</style>
         </div>
+
+        <style>{`
+            @keyframes blink {
+                0%, 49% { border-right-color: #367cfe; }
+                50%, 100% { border-right-color: transparent; }
+            }
+
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-8px); }
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.6; }
+            }
+
+            @keyframes slideDownFade {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes gradientShift {
+                0%, 100% { 
+                    background: linear-gradient(135deg, #f0f6ff 0%, #e3eafc 100%);
+                }
+                50% { 
+                    background: linear-gradient(135deg, #e3eafc 0%, #d4dfff 100%);
+                }
+            }
+
+            @keyframes floatContainer {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-6px); }
+            }
+
+            @keyframes glowPulse {
+                0%, 100% { 
+                    box-shadow: 0 4px 12px rgba(54, 124, 254, 0.1);
+                }
+                50% { 
+                    box-shadow: 0 8px 24px rgba(54, 124, 254, 0.25);
+                }
+            }
+
+            @keyframes shimmerWave {
+                0% { left: -100%; }
+                50% { left: 100%; }
+                100% { left: 100%; }
+            }
+        `}</style>
+        </>
     );
 };
