@@ -1,235 +1,48 @@
-/* Pop-in animation for homepage sections */
-.pop-in {
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 0.7s cubic-bezier(.23,1.01,.32,1), transform 0.7s cubic-bezier(.23,1.01,.32,1);
-}
-
-.pop-init {
-  opacity: 0;
-  transform: scale(0.92);
-}
-
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-/* Homepage layout and scroll behavior */
-:root {
-  /* extracted palette from the provided image (soft purple -> blue -> white) */
-  --primary: #0b2546; /* deep navy for headings */
-  --hero-1: #7c3aed; /* soft purple */
-  --hero-2: #6ea8ff; /* soft blue */
-  --hero-3: #ffffff; /* white/fade */
-  --light: #F0FBFC;
-  --dark: #181d38;
-}
-
-.fw-medium { font-weight: 600 !important; }
-.fw-semi-bold { font-weight: 700 !important; }
-
-.btn {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
-  transition: .3s;
-}
+/* === Global Layout === */
 .course-list-container {
+  min-height: 100vh;
+  width: 100vw;
+  background: #eff6ff;
   display: flex;
-  height: 100vh; /* make the page fill viewport */
-  overflow: hidden; /* prevent body scroll, we'll scroll inner content */
-  background: #f6f8fb;
+  flex-direction: row;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+  gap: 20px;
+ overflow: hidden; /* prevent page-level scroll */
 }
 
-/* Main content area next to sidebar */
 .course-list-main {
   flex: 1;
+  height: calc(100vh - 40px); /* respect the top/bottom padding */
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 20px;
+  overflow: hidden; /* prevent full-page scroll */
 }
 
-/* TopBar sits at top; content below scrolls */
-.topbar-placeholder {
-  flex: 0 0 auto;
-}
-
-/* This wrapper becomes the scrollable area */
-.homepage-content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 40px;
-}
-
-/* Section title treatment (from template) */
-.section-title {
-  position: relative;
-  display: inline-block;
-  text-transform: uppercase;
-  color: var(--primary);
-  font-weight: 700;
-}
-.section-title::before {
-  position: absolute;
-  content: "";
-  width: calc(100% + 80px);
-  height: 2px;
-  top: 4px;
-  left: -40px;
-  background: var(--primary);
-  z-index: -1;
-}
-.section-title::after {
-  position: absolute;
-  content: "";
-  width: calc(100% + 120px);
-  height: 2px;
-  bottom: 5px;
-  left: -60px;
-  background: var(--primary);
-  z-index: -1;
-}
-
-/* Service / features styling */
-.service-item, .feature-card {
-  background: var(--light);
-  transition: .5s;
-}
-.service-item:hover, .feature-card:hover {
-  margin-top: -8px;
-  background: var(--primary);
-  color: #fff;
-}
-.service-item * , .feature-card * { transition: .4s; }
-.service-item:hover * , .feature-card:hover * { color: #fff !important; }
-
-/* Team / instructors */
-.team-item img {
-  transition: .5s;
-}
-.team-item:hover img { transform: scale(1.06); }
-.team-item { background: #fff; border-radius: 12px; box-shadow: 0 6px 18px rgba(11,37,70,0.06); }
-
-/* Testimonial styles */
-.testimonial-carousel { position: relative; }
-.testimonial-text { background: #f8fafc; border-radius: 12px; }
-.testimonial-item img { width: 80px; height: 80px; object-fit: cover; }
-
-/* Footer tweaks */
-.footer { background: #111827; color: #cbd5e1; }
-.footer .btn-social { margin-right: 5px; width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; color: var(--light); font-weight: normal; border: 1px solid #FFFFFF; border-radius: 35px; transition: .3s; }
-.footer .btn-social:hover { color: var(--primary); }
-
-/* Hero tweaks */
-.hero-with-image { padding-top: 80px; padding-bottom: 80px; }
-.hero-with-image h1 { color: #fff; }
-.hero-with-image p { color: rgba(255,255,255,0.9); }
-
-/* Apply the soft blended purple-blue cloud background to match the uploaded image */
-/* Reference hero background: solid teal with curved bottom edge */
-.hero-with-image {
-  background: #3ec9c3;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-with-image::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 120px;
-  background: #3ec9c3;
-  border-bottom-left-radius: 50% 100px;
-  border-bottom-right-radius: 50% 100px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* Make sure hero text sits above the background */
-.hero-with-image > div { position: relative; z-index: 2; }
-
-/* Optional subtle overlay to soften edges */
-.hero-with-image::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,0.0) 40%, rgba(255,255,255,0.85) 92%);
-  z-index: 1;
-}
-
-/* Make hero full width inside the scroll area */
-.homepage-content section {
-  width: 95%;
-  max-width: none;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-/* Features section grid */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+.course-list-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
   gap: 20px;
   width: 100%;
-  max-width: none;
-  margin: 0;
+   overflow: hidden; /* no scroll here */
 }
 
-.feature-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 18px;
-  box-shadow: 0 8px 20px rgba(11, 37, 70, 0.06);
+.course-list-content {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  align-items: stretch;
-  text-align: left;
+  gap: 20px;
+    overflow-y: auto; /* ✅ scroll only this area */
+  overflow-x: hidden;
+  padding-right: 10px; /* avoid cutoff near scrollbar */
 }
 
-.feature-card img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.feature-card h3 {
-  margin: 0;
-  color: #0b2546;
-}
-
-.feature-card p {
-  margin: 0;
-  color: #475569;
-}
-
-/* Make course cards slightly larger on wide screens */
-@media (min-width: 900px) {
-  .course-list-main .courseCardLarge {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-}
-
-/* Adjust footer spacing so it's visible after scrolling */
-footer {
-  margin-top: 20px;
-}
-
-/* Logout toast positioning */
+/* === Logout Toast === */
 .logout-toast {
   position: fixed;
   top: 40px;
@@ -253,10 +66,105 @@ footer {
   font-size: 24px;
 }
 
-/* Small tweaks for hero button hover when using inline styles fallback */
-button[style] {
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+.assignment-stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
-button[style]:hover {
-  transform: translateY(-2px);
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(54, 124, 254, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  border: 1px solid rgba(151, 199, 255, 0.35);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(54, 124, 254, 0.2);
+}
+
+.stat-card-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.stat-card-value {
+  font-size: 34px;
+  font-weight: 800;
+  margin: 0;
+  color: white;
+}
+
+.stat-card-label {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  opacity: .95;
+}
+
+.stat-submitted {
+  background: linear-gradient(135deg, #3f7dff 0%, #1c5ee6 100%);
+}
+
+.stat-pending {
+  background: linear-gradient(135deg, #f76b8a 0%, #f4515a 100%);
+}
+
+.stat-badges {
+  background: linear-gradient(135deg, #31b0ff 0%, #0da4ea 100%);
+}
+
+.glass-stats .glass-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 14px 24px rgba(54, 124, 254, 0.15);
+  border-radius: 16px;
+}
+
+.progress-row {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-track {
+  background: rgba(255, 255, 255, 0.2);
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(55, 157, 255, 0.8);
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }

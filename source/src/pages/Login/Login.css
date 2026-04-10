@@ -54,12 +54,13 @@ body, html, #root { height: 100%; margin: 0; }
   gap: 18px;
   background: linear-gradient(180deg, #fbfdff 0%, #f6f8fc 100%);
   order: 2;
-  animation: fadeInUp .6s ease-out;
+  opacity: 0;
+  animation: fadeInRight .6s ease-out forwards;
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .login-right h2 {
@@ -75,12 +76,13 @@ body, html, #root { height: 100%; margin: 0; }
   flex-direction: column;
   gap: 18px;
   max-width: 480px;
-  animation: fadeIn .8s ease-out;
+  opacity: 0;
+  animation: fadeInForm .8s ease-out .2s forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+@keyframes fadeInForm {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .field label {
@@ -105,6 +107,49 @@ body, html, #root { height: 100%; margin: 0; }
   border-color: var(--accent);
   box-shadow: 0 6px 18px rgba(54,124,254,0.08);
   transform: translateY(-1px);
+}
+
+.input-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-icon .input {
+  padding: 14px 50px 14px 16px; /* Extra right padding for the eye icon */
+}
+
+.eye-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  font-size: 18px;
+}
+
+.eye-icon:hover,
+.eye-icon:focus,
+.eye-icon:active,
+.eye-icon:visited {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #64748b !important;
+  transform: translateY(-50%) !important;
 }
 
 .login-btn {
@@ -155,10 +200,11 @@ body, html, #root { height: 100%; margin: 0; }
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .login-card {
     flex-direction: column;
     min-height: auto;
+    margin: 0 16px;
   }
 }
 
@@ -237,6 +283,8 @@ body, html, #root { height: 100%; margin: 0; }
     border-radius: 20px;
     box-shadow: 0 12px 40px rgba(54,124,254,0.12);
     background: #fff;
+    opacity: 1; /* Override the desktop animation initial state */
+    animation: none; /* Disable desktop animation on mobile */
   }
 
   .login-right h2 {
@@ -245,6 +293,7 @@ body, html, #root { height: 100%; margin: 0; }
   }
 
   .login-form {
-    animation: fadeIn .6s ease-out;
+    opacity: 1; /* Ensure form is visible on mobile */
+    animation: none; /* Disable form animation on mobile for immediate visibility */
   }
 }

@@ -11,32 +11,34 @@ import MainPageLoader from "../../components/MainPageLoader";
 const LogoutToast = ({ show }) => {
   if (!show) return null;
   return (
-    <div className="logout-toast">
+    <div className="logout-toast" style={{ zIndex: 12000 }}>
       <span className="logout-toast-icon">✔</span>
       Logout Successful! Redirecting to login...
     </div>
   );
 };
 
-// Attractive alert banner used for success/error messages
-const AlertBanner = ({ show, type = "success", message = "", onClose }) => {
+// ✅ Assignment Success Toast Component
+const AssignmentSuccessToast = ({ show }) => {
   if (!show) return null;
   return (
-    <div className={`alert-banner ${type === "success" ? "success" : "error"}`}>
-      <div className="alert-content">
-        <span className="alert-icon">{type === "success" ? "✔" : "⚠"}</span>
-        <div className="alert-message">{message}</div>
-        <button className="alert-close" onClick={onClose} aria-label="Close">×</button>
-      </div>
+    <div className="toast success">
+      <span className="toast-icon">✔</span>
+      Assignment Submitted Successfully!
     </div>
   );
 };
 
-const initialAchievements = [
-  { icon: "🏅", title: "Java Rookie", description: "Completed first 5 lessons" },
-  { icon: "⭐", title: "Consistency Streak", description: "7 days in a row" },
-  { icon: "🎯", title: "Quiz Master", description: "3 quizzes passed" },
-];
+// ✅ Assignment Error Toast Component
+const AssignmentErrorToast = ({ show, message }) => {
+  if (!show) return null;
+  return (
+    <div className="toast failed">
+      <span className="toast-icon">✖</span>
+      {message || "Submission Failed!"}
+    </div>
+  );
+};
 
 const initialActivities = [
   {
@@ -65,9 +67,15 @@ const AssignmentPage = () => {
   const [hovered, setHovered] = useState(null);
   const [active, setActive] = useState(3);
   const [assignments, setAssignments] = useState([]);
+  const [achievements, setAchievements] = useState([]);
   const [userName, setUserName] = useState("User");
   const [showLogoutToast, setShowLogoutToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Toast states for assignment submission
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // track which assignment is expanded
   const [expandedAssignment, setExpandedAssignment] = useState(null);
@@ -75,24 +83,6 @@ const AssignmentPage = () => {
   const [submissionUrls, setSubmissionUrls] = useState({});
   // filter state - 'all' is default (server supports status query)
   const [statusFilter, setStatusFilter] = useState("all");
-
-  const alertTimerRef = useRef(null);
-  const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
-
-  const showAlert = (type, message, timeout = 3500) => {
-    if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
-    setAlert({ show: true, type, message });
-    alertTimerRef.current = setTimeout(() => {
-      setAlert((prev) => ({ ...prev, show: false }));
-      alertTimerRef.current = null;
-    }, timeout);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
-    };
-  }, []);
 
   const navigate = useNavigate();
 
@@ -109,7 +99,9 @@ const AssignmentPage = () => {
     const submission = submissionUrls[id];
 
     if (!submission || submission.trim() === "") {
-      showAlert("error", "Please enter a submission");
+      setErrorMessage("Please enter a submission");
+      setShowErrorToast(true);
+      setTimeout(() => setShowErrorToast(false), 3000);
       return;
     }
 
@@ -118,12 +110,16 @@ const AssignmentPage = () => {
       try {
         new URL(submission);
       } catch (e) {
-        showAlert("error", "Please enter a valid URL");
+        setErrorMessage("Please enter a valid URL");
+        setShowErrorToast(true);
+        setTimeout(() => setShowErrorToast(false), 3000);
         return;
       }
     } else if (allowedType === "TEXT") {
       if (submission.trim().length < 5) {
-        showAlert("error", "Text submission must be at least 5 characters");
+        setErrorMessage("Text submission must be at least 5 characters");
+        setShowErrorToast(true);
+        setTimeout(() => setShowErrorToast(false), 3000);
         return;
       }
     }
@@ -144,14 +140,59 @@ const AssignmentPage = () => {
         config
       );
 
-      showAlert("success", "Assignment submitted successfully!");
+      setShowSuccessToast(true);
       setSubmissionUrls((prev) => ({ ...prev, [id]: "" }));
       setTimeout(() => {
+        setShowSuccessToast(false);
         window.location.reload();
       }, 1500);
     } catch (error) {
       console.error("Error submitting assignment:", error);
-      showAlert("error", "Failed to submit assignment. Please try again.");
+      const serverMessage = error?.response?.data?.message || error?.response?.data?.error;
+      setErrorMessage(
+        serverMessage
+          ? serverMessage
+          : "Failed to submit assignment. Please try again."
+      );
+      setShowErrorToast(true);
+      setTimeout(() => setShowErrorToast(false), 3000);
+    }
+  };
+
+  const getBadgeIcon = (name) => {
+    const normalized = name?.toLowerCase() || "";
+    if (normalized.includes("first")) return "👣";
+    if (normalized.includes("master") || normalized.includes("quiz")) return "🏆";
+    if (normalized.includes("consistency") || normalized.includes("streak")) return "🔥";
+    if (normalized.includes("challenge") || normalized.includes("milestone")) return "🎯";
+    if (normalized.includes("learning")) return "📘";
+    return "🎖️";
+  };
+
+  const fetchBadges = async (token) => {
+    try {
+      const config = {};
+      if (token) config.headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/user/badges`, config);
+      const badges = response.data.badges || [];
+      if (badges.length === 0) {
+        setAchievements([]);
+        return;
+      }
+      setAchievements(
+        badges.map((item) => {
+          const badge = item.Badge || {};
+          return {
+            id: item.id,
+            title: badge.name || "Badge",
+            description: badge.description || "Earned a new badge",
+            icon: getBadgeIcon(badge.name),
+          };
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      setAchievements([]);
     }
   };
 
@@ -184,8 +225,19 @@ const AssignmentPage = () => {
         if (profileResponse.data) {
           setUserName(profileResponse.data.userName || "User");
         }
+
+        // Fetch badges for achievements panel
+        await fetchBadges(token);
       } catch (error) {
         console.error("Error fetching data:", error);
+        const serverMessage = error?.response?.data?.message || error?.response?.data?.error;
+        setErrorMessage(
+          serverMessage
+            ? serverMessage
+            : "Failed to load assignments. Please try again."
+        );
+        setShowErrorToast(true);
+        setTimeout(() => setShowErrorToast(false), 4000);
       } finally {
         setIsLoading(false);
       }
@@ -281,6 +333,7 @@ const AssignmentPage = () => {
                           submitted: "#28a745",   // solid green
                           graded: "#17a2b8",      // cyan
                           locked: "#dc3545",      // solid red
+                          rejected: "#dc3545",    // solid red
                         };
                         return colors[status] || colors.unlocked;
                       };
@@ -487,17 +540,13 @@ const AssignmentPage = () => {
 
           <CourseListRightSidebar
             activities={initialActivities}
-            achievements={initialAchievements}
+            achievements={achievements}
           />
         </div>
 
-        <AlertBanner
-          show={alert.show}
-          type={alert.type}
-          message={alert.message}
-          onClose={() => setAlert((prev) => ({ ...prev, show: false }))}
-        />
         <LogoutToast show={showLogoutToast} />
+        <AssignmentSuccessToast show={showSuccessToast} />
+        <AssignmentErrorToast show={showErrorToast} message={errorMessage} />
       </div>
     </div>
   );
