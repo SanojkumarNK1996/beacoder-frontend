@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import SpinningCircleLoader from "../../components/SpinningCircleLoader";
 import { loginUser } from "../../api/Login";
 import "./Login.css";
@@ -41,6 +42,7 @@ const Login = () => {
   const [showFailedToast, setShowFailedToast] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const quote = catchyQuotes[Math.floor(Math.random() * catchyQuotes.length)];
@@ -54,12 +56,25 @@ const Login = () => {
 
       if (data && data.token) {
         localStorage.setItem("authToken", data.token);
+        // Store user role for routing
+        if (data.role) {
+          localStorage.setItem("userRole", data.role);
+        } else {
+          // Clear role if not provided (default to student)
+          localStorage.removeItem("userRole");
+        }
       }
 
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-        navigate("/homepage");
+        // Route based on user role
+        const role = data?.role;
+        if (role === "instructor") {
+          navigate("/instructor/assignments");
+        } else {
+          navigate("/homepage");
+        }
       }, 1500);
     } catch (err) {
       setErrorMsg(err.message || "Unable to login");
@@ -99,17 +114,27 @@ const Login = () => {
 
               <div className="field">
                 <label htmlFor="password">Password</label>
-                <input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={hoveredInput === "password" ? "input active" : "input"}
-                  onFocus={() => setHoveredInput("password")}
-                  onBlur={() => setHoveredInput(null)}
-                  required
-                />
+                <div className="input-with-icon">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={hoveredInput === "password" ? "input active" : "input"}
+                    onFocus={() => setHoveredInput("password")}
+                    onBlur={() => setHoveredInput(null)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="eye-icon"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
 
               <button

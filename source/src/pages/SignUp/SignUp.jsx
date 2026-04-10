@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import SpinningCircleLoader from "../../components/SpinningCircleLoader";
 import { signupUser } from "../../api/SignUp"; // 👈 Import API call
 import "./SignUp.css";
@@ -33,12 +34,12 @@ const SignUp = () => {
     address: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [showToast, setShowToast] = useState(false);
   const [showFailedToast, setShowFailedToast] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFields({ ...fields, [e.target.name]: e.target.value });
@@ -49,13 +50,6 @@ const SignUp = () => {
 
     if (!fields.fullName || !fields.phone || !fields.email || !fields.password) {
       setErrorMsg("Please fill all mandatory fields: Name, Phone, Email, Password.");
-      setShowFailedToast(true);
-      setTimeout(() => setShowFailedToast(false), 2500);
-      return;
-    }
-
-    if (fields.password !== fields.confirmPassword) {
-      setErrorMsg("Passwords do not match.");
       setShowFailedToast(true);
       setTimeout(() => setShowFailedToast(false), 2500);
       return;
@@ -105,16 +99,12 @@ const SignUp = () => {
               "phone",
               "address",
               "email",
-              "password",
-              "confirmPassword",
             ].map((field) => (
               <input
                 key={field}
                 name={field}
                 type={
-                  field.includes("password")
-                    ? "password"
-                    : field === "email"
+                  field === "email"
                     ? "email"
                     : "text"
                 }
@@ -129,15 +119,33 @@ const SignUp = () => {
                     ? "Address (optional)"
                     : field === "email"
                     ? "Email"
-                    : field === "password"
-                    ? "Create Password"
-                    : "Confirm Password"
+                    : "Create Password"
                 }
                 value={fields[field]}
                 onChange={handleChange}
                 required={field !== "address"}
               />
             ))}
+
+            {/* Password field with eye icon */}
+            <div className="input-with-icon">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create Password"
+                value={fields.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="eye-icon"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
 
             <button type="submit" disabled={loading}>
               {loading ? (

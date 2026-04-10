@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Signup from './pages/SignUp/SignUp.jsx'
 import CourseDetailPage from './pages/CourseDetail/CourseDetailPage.jsx'
 import SubtopicContentPage from './pages/CourseDetail/SubtopicContentPage.jsx'
@@ -8,6 +8,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from "./pages/Homepage.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import AssignmentPage from "./pages/Assignment/AssignmentPage.jsx";
+import DiscussionPage from "./pages/DiscussionPage.jsx";
+import InstructorAssignments from "./pages/Instructor/InstructorAssignments.jsx";
+import InstructorAssignmentDetail from "./pages/Instructor/InstructorAssignmentDetail.jsx";
+import InstructorDiscussions from "./pages/Instructor/InstructorDiscussions.jsx";
+import InstructorDiscussionDetail from "./pages/Instructor/InstructorDiscussionDetail.jsx";
+import PairProgramming from "./pages/Instructor/PairProgramming.jsx";
 
 function App() {
   return (
@@ -56,7 +62,40 @@ function App() {
         } />
         <Route path="/discussions" element={
           <ProtectedRoute>
-            <CourseList />
+            <DiscussionPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/discussions/:discussionId" element={
+          <ProtectedRoute>
+            <DiscussionPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Instructor routes */}
+        <Route path="/instructor-homepage" element={<Navigate to="/instructor/assignments" replace />} />
+        <Route path="/instructor/assignments" element={
+          <ProtectedRoute requiredRole="instructor">
+            <InstructorAssignments />
+          </ProtectedRoute>
+        } />
+        <Route path="/instructor/assignments/detail" element={
+          <ProtectedRoute requiredRole="instructor">
+            <InstructorAssignmentDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="/instructor/discussions" element={
+          <ProtectedRoute requiredRole="instructor">
+            <InstructorDiscussions />
+          </ProtectedRoute>
+        } />
+        <Route path="/instructor/discussions/:discussionId" element={
+          <ProtectedRoute requiredRole="instructor">
+            <InstructorDiscussionDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="/instructor/pair-programming" element={
+          <ProtectedRoute requiredRole="instructor">
+            <PairProgramming />
           </ProtectedRoute>
         } />
 
