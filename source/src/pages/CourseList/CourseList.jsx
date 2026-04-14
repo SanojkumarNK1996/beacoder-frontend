@@ -6,24 +6,19 @@ import { CourseListRightSidebar } from "../../components/CourseListRightSidebar"
 import NewCourseContainer from "../../components/NewCoursesContainer";
 import MainPageLoader from "../../components/MainPageLoader";
 import "./CourseList.css";
-import { fetchCourses, fetchUserProfile, fetchEnrolledCourses, enrollCourse } from "../../api/CourseList"; 
+import axios from "axios";
+import { fetchCourses, fetchUserProfile, enrollCourse } from "../../api/CourseList"; 
 
 // ✅ Logout Toast Component
 const LogoutToast = ({ show }) => {
   if (!show) return null;
   return (
-    <div className="logout-toast">
+    <div className="logout-toast" style={{ zIndex: 12000 }}>
       <span className="logout-toast-icon">✔</span>
       Logout Successful! Redirecting to login...
     </div>
   );
 };
-
-const initialAchievements = [
-  { icon: "🏅", title: "Java Rookie", description: "Completed first 5 lessons" },
-  { icon: "⭐", title: "Consistency Streak", description: "7 days in a row" },
-  { icon: "🎯", title: "Quiz Master", description: "3 quizzes passed" },
-];
 
 const initialActivities = [
   {
@@ -52,29 +47,62 @@ const CourseList = () => {
   const [hovered, setHovered] = useState(null);
   const [active, setActive] = useState(0);
   const [hoveredCourse, setHoveredCourse] = useState(null);
-  const [enrolledHoveredCourse, setEnrolledHoveredCourse] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [achievements, setAchievements] = useState([]);
   const [userName, setUserName] = useState("User");
   const [showLogoutToast, setShowLogoutToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  const getBadgeIcon = (name) => {
+    const normalized = name?.toLowerCase() || "";
+    if (normalized.includes("first")) return "👣";
+    if (normalized.includes("master") || normalized.includes("quiz")) return "🏆";
+    if (normalized.includes("consistency") || normalized.includes("streak")) return "🔥";
+    if (normalized.includes("challenge") || normalized.includes("milestone")) return "🎯";
+    if (normalized.includes("learning")) return "📘";
+    return "🎖️";
+  };
+
+  const fetchBadges = async (token) => {
+    try {
+      const config = {};
+      if (token) config.headers = { Authorization: `Bearer ${token}` };
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/user/badges`, config);
+      const badges = response.data.badges || [];
+      if (badges.length === 0) {
+        setAchievements([]);
+        return;
+      }
+      setAchievements(
+        badges.map((item) => {
+          const badge = item.Badge || {};
+          return {
+            id: item.id,
+            title: badge.name || "Badge",
+            description: badge.description || "Earned a badge",
+            icon: getBadgeIcon(badge.name),
+          };
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      setAchievements([]);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
 
     const fetchData = async () => {
       try {
-        const [coursesData, userData, enrolledData] = await Promise.all([
+        const [coursesData, userData] = await Promise.all([
           fetchCourses(token),
           fetchUserProfile(token),
-          fetchEnrolledCourses(token),
         ]);
         setCourses(coursesData);
         setUserName(userData.userName);
-        // Normalize enrolled courses so each has an `id` field taken from `courseId`
-        const normalizedEnrolled = (enrolledData || []).map(c => ({ ...c, id: c.courseId }));
-        setEnrolledCourses(normalizedEnrolled);
+        await fetchBadges(token);
       } catch (err) {
         console.error(err);
       } finally {
@@ -113,15 +141,7 @@ const CourseList = () => {
 
         <div className="course-list-inner">
           <div className="course-list-content">
-            {enrolledCourses && enrolledCourses.length > 0 && (
-              <NewCourseContainer
-                courses={enrolledCourses}
-                hoveredCourse={enrolledHoveredCourse}
-                setHoveredCourse={setEnrolledHoveredCourse}
-                courseText="Enrolled Courses"
-                buttonText="Continue"
-              />
-            )}
+            {/* Removed Enrolled Courses section as per user request */}
 
             <NewCourseContainer
               courses={courses}
@@ -133,10 +153,6 @@ const CourseList = () => {
                 const token = localStorage.getItem("authToken");
                 try {
                   await enrollCourse(token, course.id || course.courseId || course._id);
-                  // refresh enrolled list
-                  const enrolled = await fetchEnrolledCourses(token);
-                  const normalizedEnrolled = (enrolled || []).map(c => ({ ...c, id: c.courseId }));
-                  setEnrolledCourses(normalizedEnrolled);
                 } catch (err) {
                   console.error(err);
                 }
@@ -146,7 +162,7 @@ const CourseList = () => {
 
           <CourseListRightSidebar
             activities={initialActivities}
-            achievements={initialAchievements}
+            achievements={achievements}
           />
         </div>
 

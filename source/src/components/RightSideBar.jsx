@@ -1,8 +1,6 @@
-import { Achievements } from "./Achievments";
-import { RecentActivity } from "./RecentActivity";
-
+import { Achievements } from "./Achievments"
 // RightSidebar component
-export const RightSidebar = ({ achievements,activities }) => (
+export const RightSidebar = ({ achievements }) => (
     <div
         style={{
             background: "#fff",
@@ -20,6 +18,5 @@ export const RightSidebar = ({ achievements,activities }) => (
         }}
     >
         <Achievements achievements={achievements} /> {/* Pass achievements prop */}
-        <RecentActivity activities={activities}  />
     </div>
 );

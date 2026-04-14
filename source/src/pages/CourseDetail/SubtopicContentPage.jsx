@@ -118,7 +118,6 @@ const SubtopicContentPage = () => {
         const token = localStorage.getItem("authToken");
         completeContentBlock(blockId, token)
           .then(() => {
-            console.log("marked last content complete via effect", blockId);
             lastMarkedRef.current = true;
           })
           .catch((err) => {

@@ -1,10 +1,26 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { FaBell, FaUserCircle, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export const TopBar = ({ userName, onLogout }) => {
+export const TopBar = memo(({ userName, onLogout }) => {
+    const navigate = useNavigate();
+    const popupRef = useRef(null);
+    const profilePopupRef = useRef(null);
     const [showPopup, setShowPopup] = useState(false);
+    const [showNotificationPopup, setShowNotificationPopup] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
     const [displayedText, setDisplayedText] = useState("");
     const fullText = `Hello ${userName} Welcome Back`;
+
+    const [isLoadingUnread, setIsLoadingUnread] = useState(false);
+
+    useEffect(() => {
+        if (!isLoadingUnread) {
+            fetchUnreadCount();
+        }
+    }, []);
 
     useEffect(() => {
         if (displayedText.length < fullText.length) {
@@ -21,6 +37,89 @@ export const TopBar = ({ userName, onLogout }) => {
         }
     }, [displayedText, fullText]);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popupRef.current && !popupRef.current.contains(event.target)) {
+                setShowNotificationPopup(false);
+            }
+        };
+
+        if (showNotificationPopup) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showNotificationPopup]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (profilePopupRef.current && !profilePopupRef.current.contains(event.target)) {
+                setShowPopup(false);
+            }
+        };
+
+        if (showPopup) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showPopup]);
+
+    const fetchUnreadCount = async () => {
+        if (isLoadingUnread) return;
+
+        setIsLoadingUnread(true);
+        try {
+            const token = localStorage.getItem("authToken");
+            const config = {};
+            if (token) config.headers = { Authorization: `Bearer ${token}` };
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/notifications/me/unread-count`, config);
+            setUnreadCount(response.data.unreadCount || 0);
+        } catch (error) {
+            console.error('Error fetching unread count:', error);
+        } finally {
+            setIsLoadingUnread(false);
+        }
+    };
+
+    const fetchNotifications = async () => {
+        try {
+            const token = localStorage.getItem("authToken");
+            const config = {};
+            if (token) config.headers = { Authorization: `Bearer ${token}` };
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/notifications/me`, config);
+            const data = response.data;
+            setNotifications(data.notifications);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    const markAsRead = async (notification) => {
+        try {
+            const token = localStorage.getItem("authToken");
+            const config = {};
+            if (token) config.headers = { Authorization: `Bearer ${token}` };
+            await axios.patch(`${import.meta.env.VITE_BASE_URL}/api/v1/notifications/me/mark-read`, {
+                notificationIds: [notification.id]
+            }, config);
+            // Update local state
+            setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+            // Redirect if redirectTo is a non-empty string
+            if (notification.redirectTo && notification.redirectTo.trim() !== "") {
+                setShowNotificationPopup(false); // Close popup before navigating
+                navigate(notification.redirectTo);
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
     return (
         <>
         <div style={{ 
@@ -30,7 +129,9 @@ export const TopBar = ({ userName, onLogout }) => {
             background: "rgba(255, 255, 255, 0.8)", 
             backdropFilter: "blur(10px)",
             borderBottom: "1px solid rgba(227, 234, 252, 0.8)",
-            gap: "15px" 
+            gap: "15px",
+            position: "relative",
+            zIndex: 10010
         }}>
             {/* Minimalist Welcome Chip */}
             <div style={{
@@ -61,19 +162,36 @@ export const TopBar = ({ userName, onLogout }) => {
             <div style={{ flex: 1 }}></div>
 
             {/* Notification Icon */}
-            <div style={{ position: "relative", cursor: "pointer" }}>
-                <FaBell style={{ fontSize: "28px", color: "#64748b", transition: "all 0.3s" }} />
-                <span style={{
-                    position: "absolute",
-                    top: "-2px",
-                    right: "-2px",
-                    width: "10px",
-                    height: "10px",
-                    background: "#ff4d4d",
-                    borderRadius: "50%",
-                    border: "2px solid #fff",
-                    animation: "pulse 2s infinite"
-                }}></span>
+            <div style={{ position: "relative", cursor: "pointer", zIndex: 20 }} onClick={() => {
+                if (!showNotificationPopup) {
+                    fetchNotifications();
+                }
+                setShowNotificationPopup(!showNotificationPopup);
+            }}>
+                <FaBell style={{ fontSize: "28px", color: "#64748b", transition: "all 0.3s", zIndex: 10, position: "relative" }} />
+                {unreadCount > 0 && (
+                    <span style={{
+                        position: "absolute",
+                        top: "-8px",
+                        right: "-8px",
+                        width: "20px",
+                        height: "20px",
+                        background: "#ff0000",
+                        borderRadius: "50%",
+                        border: "2px solid #fff",
+                        color: "#fff",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        animation: "pulse 2s infinite",
+                        boxShadow: "0 0 8px rgba(255, 0, 0, 0.6)",
+                        zIndex: 15
+                    }}>
+                        {unreadCount}
+                    </span>
+                )}
             </div>
 
             {/* Profile Section */}
@@ -98,7 +216,7 @@ export const TopBar = ({ userName, onLogout }) => {
                 <FaChevronDown style={{ fontSize: "16px", color: "#64748b", transition: "transform 0.2s", transform: showPopup ? "rotate(180deg)" : "rotate(0deg)" }} />
 
                 {showPopup && (
-                    <div style={{
+                    <div ref={profilePopupRef} style={{
                         position: "absolute",
                         top: "60px",
                         right: "20px",
@@ -141,6 +259,56 @@ export const TopBar = ({ userName, onLogout }) => {
                     </div>
                 )}
             </div>
+
+            {/* Notification Popup */}
+            {showNotificationPopup && (
+                <div ref={popupRef} style={{
+                    position: "absolute",
+                    top: "60px",
+                    right: "80px", // Adjust to not overlap with profile
+                    width: "320px",
+                    maxHeight: "400px",
+                    background: "#fff",
+                    borderRadius: "14px",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                    padding: "12px",
+                    zIndex: 10050,
+                    border: "1px solid #f1f5f9",
+                    animation: "slideDownFade 0.3s ease",
+                    overflowY: "auto"
+                }}>
+                    <div style={{ padding: "12px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+                        <p style={{ margin: 0, fontWeight: "700", fontSize: "16px" }}>Notifications</p>
+                    </div>
+                    {notifications.length === 0 ? (
+                        <p style={{ textAlign: "center", color: "#64748b", fontSize: "14px" }}>No notifications</p>
+                    ) : (
+                        notifications.map(notification => (
+                            <div key={notification.id} style={{
+                                padding: "12px",
+                                borderBottom: "1px solid #f1f5f9",
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                                borderRadius: "8px",
+                                marginBottom: "4px",
+                                background: notification.isRead ? "#f8fafc" : "#fff"
+                            }}
+                            onClick={() => {
+                                if (!notification.isRead) {
+                                    markAsRead(notification);
+                                }
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
+                            onMouseLeave={e => e.currentTarget.style.background = notification.isRead ? "#f8fafc" : "#fff"}
+                            >
+                                <p style={{ margin: 0, fontWeight: "600", fontSize: "14px", color: "#333" }}>{notification.module} - {notification.subModule}</p>
+                                <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#64748b" }}>{notification.message}</p>
+                                <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#94a3b8" }}>{new Date(notification.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
         </div>
 
         <style>{`
@@ -201,4 +369,4 @@ export const TopBar = ({ userName, onLogout }) => {
         `}</style>
         </>
     );
-};
+});
