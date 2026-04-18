@@ -454,7 +454,7 @@ const DiscussionPage = () => {
   const [successMsg, setSuccessMsg] = useState("Discussion created successfully!");
   const [showFailedToast, setShowFailedToast] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const navigate = useNavigate();
 
@@ -512,7 +512,7 @@ const DiscussionPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [filter, discussionId]);
+  }, [filter, discussionId, refreshTrigger]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -541,6 +541,7 @@ const DiscussionPage = () => {
   const handleDiscussionCreated = () => {
     setSuccessMsg("Discussion created successfully!");
     setShowSuccessToast(true);
+    setRefreshTrigger(prev => prev + 1);
     setTimeout(() => {
       setShowSuccessToast(false);
     }, 1500);

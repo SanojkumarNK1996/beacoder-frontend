@@ -25,6 +25,12 @@ export async function fetchSubtopicsAndQuiz(id, section, token) {
   };
 }
 
+export function fetchTopicNotes(topicId, token) {
+  return axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/notes/${topicId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 export function fetchSubtopicContents(courseId, topicId, subtopicId, token) {
   return axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/courses/${courseId}/topics/${topicId}/subtopics/${subtopicId}/contents`, {
     headers: { Authorization: `Bearer ${token}` }

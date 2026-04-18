@@ -4,12 +4,14 @@ import { Sidebar } from "../../components/Sidebar";
 import { CourseHeaderCard } from "../../components/CourseHeaderCard";
 import MainPageLoader from "../../components/MainPageLoader";
 import { FaTasks, FaChevronRight, FaChevronDown, FaRegFileAlt } from "react-icons/fa";
+import { jsPDF } from "jspdf";
 import QuizPopup from "../../components/QuizPopup";
-import ToastNotification from "../../components/ToastNotification";
+import TopicNotesPopup from "../../components/TopicNotesPopup";
 import {
   fetchCourseHeader,
   fetchCourseTopics,
-  fetchSubtopicsAndQuiz
+  fetchSubtopicsAndQuiz,
+  fetchTopicNotes
 } from "../../api/CourseDetailPage";
 import "./CourseDetailPage.css";
 const CourseDetailPage = () => {
@@ -27,6 +29,11 @@ const CourseDetailPage = () => {
   const [subtopicLoading, setSubtopicLoading] = useState(false);
   const [selectedQuizPopup, setSelectedQuizPopup] = useState(null);
   const [selectedSubtopicId, setSelectedSubtopicId] = useState(location.state?.selectedSubtopicId || null);
+  const [topicNotes, setTopicNotes] = useState([]);
+  const [showNotesPopup, setShowNotesPopup] = useState(false);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesError, setNotesError] = useState("");
+  const [selectedTopicTitle, setSelectedTopicTitle] = useState("");
   const [hasRestoredState, setHasRestoredState] = useState(false);
 
   useEffect(() => {
@@ -99,6 +106,63 @@ const CourseDetailPage = () => {
     }
   };
 
+  const handleDownloadNotes = async (event, section) => {
+    event.stopPropagation();
+    setNotesError("");
+    setNotesLoading(true);
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const response = await fetchTopicNotes(section.id, token);
+      if (response.data?.success) {
+        setTopicNotes(response.data.data || []);
+        setSelectedTopicTitle(section.title);
+        setShowNotesPopup(true);
+      } else {
+        setNotesError("Unable to load topic notes. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to fetch topic notes:", error);
+      setNotesError("Unable to load topic notes. Please try again later.");
+    } finally {
+      setNotesLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = () => {
+    if (!topicNotes.length) return;
+
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    doc.setTextColor("#1f4ed8");
+    doc.setFontSize(20);
+    doc.text(`Notes for ${selectedTopicTitle}`, 40, 50);
+
+    let y = 85;
+    doc.setFontSize(13);
+    doc.setTextColor("#1f2937");
+
+    topicNotes.forEach((note, index) => {
+      const heading = `${index + 1}. ${note.subtopic}`;
+      doc.setFontSize(14);
+      doc.setTextColor("#0f172a");
+      doc.text(heading, 40, y);
+      y += 20;
+
+      doc.setFontSize(12);
+      doc.setTextColor("#334155");
+      const noteLines = doc.splitTextToSize(note.notes || "No notes available.", 520);
+      doc.text(noteLines, 40, y);
+      y += noteLines.length * 16 + 18;
+
+      if (y > 740 && index !== topicNotes.length - 1) {
+        doc.addPage();
+        y = 40;
+      }
+    });
+
+    doc.save(`${selectedTopicTitle.replace(/\s+/g, "_")}_notes.pdf`);
+  };
+
   const handleSubtopicClick = (courseId, topicId, subtopicId, subtopicTitle) => {
     navigate(`/course/${courseId}/topic/${topicId}/sub/${subtopicId}`, {
       state: { subtopicTitle }
@@ -157,13 +221,7 @@ const CourseDetailPage = () => {
                               : handleTopicDropdown(section, idx)
                           }
                         >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                            }}
-                          >
+                          <span className="syllabus-item-left">
                             {isQuiz && (
                               <FaRegFileAlt
                                 style={{
@@ -174,23 +232,36 @@ const CourseDetailPage = () => {
                             )}
                             <span className="syllabus-item-title">{section.title}</span>
                           </span>
-                          {isQuiz ? (
-                            <FaTasks
-                              style={{
-                                color: "#367cfe",
-                                fontSize: "22px",
-                                cursor: "pointer",
-                              }}
-                            />
-                          ) : openIndex === idx ? (
-                            <FaChevronDown
-                              style={{ color: "#222", fontSize: "22px" }}
-                            />
-                          ) : (
-                            <FaChevronRight
-                              style={{ color: "#222", fontSize: "22px" }}
-                            />
-                          )}
+                          <span className="syllabus-item-right">
+                            {!isQuiz && (
+                              <button
+                                type="button"
+                                className="topic-notes-button"
+                                onClick={e => handleDownloadNotes(e, section)}
+                                disabled={notesLoading}
+                                title="View notes"
+                              >
+                                {notesLoading ? "Loading..." : "Notes"}
+                              </button>
+                            )}
+                            {isQuiz ? (
+                              <FaTasks
+                                style={{
+                                  color: "#367cfe",
+                                  fontSize: "22px",
+                                  cursor: "pointer",
+                                }}
+                              />
+                            ) : openIndex === idx ? (
+                              <FaChevronDown
+                                style={{ color: "#222", fontSize: "22px" }}
+                              />
+                            ) : (
+                              <FaChevronRight
+                                style={{ color: "#222", fontSize: "22px" }}
+                              />
+                            )}
+                          </span>
                         </li>
 
                         {!isQuiz && openIndex === idx && (
@@ -270,6 +341,16 @@ const CourseDetailPage = () => {
           </div>
         </div>
 
+        {showNotesPopup && (
+          <TopicNotesPopup
+            onClose={() => setShowNotesPopup(false)}
+            onDownload={handleDownloadPdf}
+            topicName={selectedTopicTitle}
+            notesData={topicNotes}
+            loading={notesLoading}
+            error={notesError}
+          />
+        )}
         {selectedQuizPopup && (
           <QuizPopup
             onClose={() => setSelectedQuizPopup(null)}
