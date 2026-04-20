@@ -25,7 +25,7 @@ export const CourseHeaderCard = ({ course }) => (
             }}
         >
             <img
-                src={course.imageUrl}
+                src={course?.imageUrl?.startsWith("http") ? course.imageUrl : `/images/${course?.imageUrl || "default.png"}`}
                 alt={course.courseName}
                 style={{ height: "72px", width: "72px", objectFit: "contain" }}
             />

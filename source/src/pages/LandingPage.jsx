@@ -1056,17 +1056,6 @@ const LandingPage = () => {
                                                 marginBottom: "10px",
                                             }}
                                         >
-                                            <img
-                                                src={student.img}
-                                                alt={student.name}
-                                                style={{
-                                                    width: "45px",
-                                                    height: "45px",
-                                                    borderRadius: "50%",
-                                                    marginRight: "10px",
-                                                    objectFit: "cover",
-                                                }}
-                                            />
                                             <div>
                                                 <h4
                                                     style={{
@@ -1127,17 +1116,6 @@ const LandingPage = () => {
                                                     marginBottom: "10px",
                                                 }}
                                             >
-                                                <img
-                                                    src={students[i + 6].img}
-                                                    alt={students[i + 6].name}
-                                                    style={{
-                                                        width: "45px",
-                                                        height: "45px",
-                                                        borderRadius: "50%",
-                                                        marginRight: "10px",
-                                                        objectFit: "cover",
-                                                    }}
-                                                />
                                                 <div>
                                                     <h4
                                                         style={{
