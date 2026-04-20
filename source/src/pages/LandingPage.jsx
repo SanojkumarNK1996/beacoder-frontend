@@ -225,6 +225,7 @@ const LandingPage = () => {
         },
     ];
 
+    
     useEffect(() => {
         const token = localStorage.getItem("authToken");
 
