@@ -8,6 +8,26 @@ import { InterviewQuiz } from "../../components/InterviewQuiz";
 import { fetchSubtopicContents, completeContentBlock } from "../../api/CourseDetailPage";
 import "./CourseDetailPage.css";
 
+// Toast Components
+const SuccessToast = ({ show }) => {
+  if (!show) return null;
+  return (
+    <div className="toast success">
+      <span className="toast-icon">✔</span>
+      Notes submitted successfully!
+    </div>
+  );
+};
+
+const ErrorToast = ({ show, message }) => {
+  if (!show) return null;
+  return (
+    <div className="toast failed">
+      <span className="toast-icon">✖</span>
+      {message || "Error submitting notes"}
+    </div>
+  );
+};
 
 const SubtopicContentPage = () => {
   const { cId, tId, sId } = useParams();
@@ -20,6 +40,11 @@ const SubtopicContentPage = () => {
   const [subtopicTitle, setSubtopicTitle] = useState(location.state?.subtopicTitle || "");
   const [linearContent, setLinearContent] = useState([]);
   const [visibleIndex, setVisibleIndex] = useState(0);
+  const [notesText, setNotesText] = useState("");
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   // track whether we've already marked the last item complete so the effect
   // doesn't fire repeatedly when visibleIndex stays at the end
   const lastMarkedRef = useRef(false);
@@ -39,6 +64,48 @@ const SubtopicContentPage = () => {
         setLoading(false);
       });
   }, [cId, tId, sId]);
+
+  // Fetch existing notes on component mount
+  useEffect(() => {
+    const fetchExistingNotes = async () => {
+      console.log("Fetching notes for tId:", tId, "sId:", sId);
+      try {
+        const token = localStorage.getItem("authToken");
+        const config = {};
+        if (token) config.headers = { Authorization: `Bearer ${token}` };
+
+        const notesUrl = `${import.meta.env.VITE_BASE_URL}/api/v1/notes/${tId}/${sId}`;
+        console.log("Notes API URL:", notesUrl);
+        
+        const response = await fetch(notesUrl, config);
+
+        console.log("Notes fetch response status:", response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Notes data received:", data);
+          
+          // Extract notes from response - notes are nested under data.data.notes
+          if (data && data.data && data.data.notes) {
+            console.log("Setting notes text to:", data.data.notes);
+            setNotesText(data.data.notes);
+          } else {
+            console.log("No notes found in response");
+          }
+        } else {
+          console.log("Notes fetch failed with status:", response.status);
+          const errorData = await response.json();
+          console.log("Error response:", errorData);
+        }
+      } catch (error) {
+        console.error("Error fetching existing notes:", error);
+      }
+    };
+
+    if (tId && sId) {
+      fetchExistingNotes();
+    }
+  }, [tId, sId]);
 
   useEffect(() => {
     if (!contentData || contentData.length === 0) return;
@@ -100,6 +167,55 @@ const SubtopicContentPage = () => {
         selectedSubtopicId: sId
       }
     });
+  };
+
+  const handleSubmitNotes = async () => {
+    if (!notesText.trim()) {
+      setErrorMessage("Please write something in the notes before submitting");
+      setShowErrorToast(true);
+      setTimeout(() => setShowErrorToast(false), 3000);
+      return;
+    }
+
+    setNotesLoading(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const config = {};
+      if (token) config.headers = { Authorization: `Bearer ${token}` };
+
+      const payload = {
+        topicId: parseInt(tId),
+        subtopicId: parseInt(sId),
+        notes: notesText
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/v1/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...config.headers
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setShowSuccessToast(true);
+        setNotesText("");
+        setTimeout(() => setShowSuccessToast(false), 3000);
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Failed to submit notes");
+        setShowErrorToast(true);
+        setTimeout(() => setShowErrorToast(false), 3000);
+      }
+    } catch (error) {
+      console.error("Error submitting notes:", error);
+      setErrorMessage("Error submitting notes. Please try again.");
+      setShowErrorToast(true);
+      setTimeout(() => setShowErrorToast(false), 3000);
+    } finally {
+      setNotesLoading(false);
+    }
   };
 
   // when the visible index reaches the very last item we need to behave the
@@ -283,12 +399,24 @@ const SubtopicContentPage = () => {
             {/* Notes Section */}
             <div className="notes-section">
               <h3>Take Notes</h3>
-              <textarea placeholder="Write your notes here..." />
-              <button onClick={() => alert("Notes submitted ✅")}>Submit</button>
+              <textarea 
+                placeholder="Write your notes here..." 
+                value={notesText}
+                onChange={(e) => setNotesText(e.target.value)}
+                disabled={notesLoading}
+              />
+              <button 
+                onClick={handleSubmitNotes}
+                disabled={notesLoading}
+              >
+                {notesLoading ? "Submitting..." : "Submit"}
+              </button>
             </div>
           </div>
         </div>
       </div>
+      <SuccessToast show={showSuccessToast} />
+      <ErrorToast show={showErrorToast} message={errorMessage} />
     </div>
   );
 };

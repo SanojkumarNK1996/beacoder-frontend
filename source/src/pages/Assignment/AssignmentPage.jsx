@@ -159,6 +159,8 @@ const AssignmentPage = () => {
     }
   };
 
+  const normalizeStatus = (status) => String(status || "").trim().toLowerCase();
+
   const getBadgeIcon = (name) => {
     const normalized = name?.toLowerCase() || "";
     if (normalized.includes("first")) return "👣";
@@ -208,7 +210,8 @@ const AssignmentPage = () => {
         // Build assignments URL with optional status query (server supports it)
         let assignmentsUrl = `${import.meta.env.VITE_BASE_URL}/api/v1/assignments/my-assignments`;
         if (statusFilter && statusFilter !== "all") {
-          assignmentsUrl += `?status=${statusFilter}`;
+          const apiStatus = statusFilter === "completed" ? "submitted" : statusFilter;
+          assignmentsUrl += `?status=${apiStatus}`;
         }
 
         // Fetch assignments (server will return filtered list when status provided)
@@ -301,8 +304,8 @@ const AssignmentPage = () => {
                     Pending
                   </button>
                   <button
-                    className={`filter-btn ${statusFilter === "submitted" ? "active" : ""}`}
-                    onClick={() => setStatusFilter("submitted")}
+                    className={`filter-btn ${statusFilter === "completed" ? "active" : ""}`}
+                    onClick={() => setStatusFilter("completed")}
                   >
                     Completed
                   </button>
@@ -312,13 +315,16 @@ const AssignmentPage = () => {
                 <div className="assignment-cards-grid">
                   {assignments
                     .filter((assignment) => {
-                      if (statusFilter === "pending") return assignment.status !== "submitted";
-                      if (statusFilter === "submitted") return assignment.status === "submitted";
+                      const completedStatuses = ["submitted", "accepted"];
+                      const normalizedStatus = normalizeStatus(assignment.status);
+                      if (statusFilter === "pending") return !completedStatuses.includes(normalizedStatus);
+                      if (statusFilter === "completed") return completedStatuses.includes(normalizedStatus);
                       return true;
                     })
                     .map((assignment, index) => {
                       const desc = assignment.Assignment?.description;
-                      const isSubmitted = assignment.status === "submitted";
+                      const normalizedStatus = normalizeStatus(assignment.status);
+                      const isSubmitted = ["submitted", "accepted"].includes(normalizedStatus);
                       const language = desc?.language || "javascript";
                       // always use the site accent for the language badge so it never
                       // clashes with the status color. this keeps the blue
@@ -327,15 +333,16 @@ const AssignmentPage = () => {
                         return "#367cfe"; // primary accent color used throughout the app
                       };
                       const getStatusColor = (status) => {
+                        const normalized = normalizeStatus(status);
                         const colors = {
                           pending: "#dc3545",      // solid red
                           unlocked: "#ffc107",    // orange
                           submitted: "#28a745",   // solid green
-                          graded: "#17a2b8",      // cyan
+                          accepted: "#ffc107",    // yellow for accepted
                           locked: "#dc3545",      // solid red
-                          rejected: "#dc3545",    // solid red
+                          rejected: "#fd7e14",    // orange for rejected
                         };
-                        return colors[status] || colors.unlocked;
+                        return colors[normalized] || colors.unlocked;
                       };
                       const isExpanded = expandedAssignment === assignment.id;
 
