@@ -131,7 +131,7 @@ export const TopBar = memo(({ userName, onLogout }) => {
             borderBottom: "1px solid rgba(227, 234, 252, 0.8)",
             gap: "15px",
             position: "relative",
-            zIndex: 10010
+            zIndex: 100
         }}>
             {/* Minimalist Welcome Chip */}
             <div style={{
@@ -272,7 +272,7 @@ export const TopBar = memo(({ userName, onLogout }) => {
                     borderRadius: "14px",
                     boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
                     padding: "12px",
-                    zIndex: 10050,
+                    zIndex: 200,
                     border: "1px solid #f1f5f9",
                     animation: "slideDownFade 0.3s ease",
                     overflowY: "auto"
