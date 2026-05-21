@@ -195,37 +195,43 @@ const LandingPage = () => {
     const courses = [
         {
             title: "JAVA",
-            img: "https://as2.ftcdn.net/v2/jpg/02/92/83/57/1000_F_292835773_oImixQGFKLpOPnjfsbesHyqdjOk5hsxL.jpg",
+            img: "/images/advanced-java.jpg",
             rating: "4.7",
             viewers: "(5.3k)",
         },
+                {
+            title: "React JS",
+            img: "/images/react.png",
+            rating: "4.0",
+            viewers: "(3.3k)",
+        },
         {
             title: "Data Structure & Algorithm",
-            img: "https://as1.ftcdn.net/v2/jpg/00/51/66/86/1000_F_51668666_ySJrR1BTXPw4bPbUPm0rxMK0U4ofS9kH.jpg",
+            img: "/images/database.png",
             rating: "4.6",
             viewers: "(4.1k)",
         },
         {
-            title: "Database Fundamentals (SQL)",
-            img: "https://as1.ftcdn.net/v2/jpg/01/38/58/62/1000_F_138586261_nYWe7WbUi9ouurv6tcl2WmpLaXV1xdea.jpg",
-            rating: "4.2",
-            viewers: "(6.2k)",
+            title: "Node.js",
+            img: "/images/nodejs.png",
+            rating: "4.8",
+            viewers: "(7.1k)",
         },
         {
-            title: "Cloud Computing (AWS)",
-            img: "https://as2.ftcdn.net/v2/jpg/05/42/29/57/1000_F_542295701_fZVdsAuV5OBjQ2BUDhjOTBR32JThLRa6.jpg",
-            rating: "4.1",
-            viewers: "(7.4k)",
+            title: "MongoDB",
+            img: "/images/mongodb.png",
+            rating: "4.7",
+            viewers: "(6.8k)",
         },
-        {
-            title: "React JS",
-            img: "https://as2.ftcdn.net/v2/jpg/16/68/26/85/1000_F_1668268577_NQLAdRVIYMx9iBQq6OwCqwCH2mW6KN1R.jpg",
-            rating: "4.0",
-            viewers: "(3.3k)",
+                {
+            title: "NestJS",
+            img: "/images/nestjs.jpg",
+            rating: "4.7",
+            viewers: "(6.8k)",
         },
     ];
 
-    
+
     useEffect(() => {
         const token = localStorage.getItem("authToken");
 
@@ -277,19 +283,19 @@ const LandingPage = () => {
         <div
             style={{
                 display: "flex",
-                height: "100vh", 
-                overflow: "hidden", 
+                height: "100vh",
+                overflow: "hidden",
                 background: "#f6f8fb",
-                width: "100vw",          
-                boxSizing: "border-box", 
+                width: "100vw",
+                boxSizing: "border-box",
                 overflowX: "hidden",
             }}
         >
             <div
                 style={{
                     flex: "1 1 auto",
-                    width: "100%",               
-                    boxSizing: "border-box",     
+                    width: "100%",
+                    boxSizing: "border-box",
                     overflowY: "auto",
                     WebkitOverflowScrolling: "touch",
                     paddingBottom: "40px",
@@ -364,8 +370,8 @@ const LandingPage = () => {
                                 lineHeight: 1.2,
                             }}
                         >
-                            Empower Your{" "}
-                            <span style={{ color: "#00c3ff" }}>Learning Journey</span>
+                            Land Your{" "}
+                            <span style={{ color: "#00c3ff" }}>Dream Engineering Job</span>
                         </h1>
 
                         <p
@@ -377,8 +383,8 @@ const LandingPage = () => {
                                 lineHeight: 1.6,
                             }}
                         >
-                            Learn from industry experts anytime, anywhere. Upgrade your skills
-                            with our e-learning platform and take your career to the next level.
+                            Get hired at top companies with mentorship from engineers at Infosys, TCS & IBM.
+                            600+ students already placed. 90-day job guarantee or money back.
                         </p>
 
                         <motion.button
@@ -402,7 +408,7 @@ const LandingPage = () => {
                                 transition: "0.4s",
                             }}
                         >
-                            Register Now
+                            Get Hired Now
                         </motion.button>
                     </motion.div>
                 </section>
@@ -483,11 +489,11 @@ const LandingPage = () => {
                             marginBottom: "25px",
                         }}>
                             We turn <strong style={{ color: "#007bff" }}>learners</strong> into{" "}
-                            <strong style={{ color: "#00c3ff" }}>creators</strong>. Our platform
+                            <strong style={{ color: "#00c3ff" }}>job-ready engineers</strong>. Our platform
                             bridges the gap between theory and practice through{" "}
                             <strong>structured learning paths</strong>,{" "}
-                            <strong>mentor-led guidance</strong>, and{" "}
-                            <strong>hands-on projects</strong>.
+                            <strong>1-on-1 mentor guidance</strong>, and{" "}
+                            <strong>real-world projects</strong>.
                         </p>
 
                         <p style={{
@@ -811,7 +817,7 @@ const LandingPage = () => {
                             textShadow: "0 3px 6px rgba(0,0,0,0.1)",
                         }}
                     >
-                        Popular Courses
+                        Job-Ready Courses
                         <span
                             style={{
                                 position: "absolute",
@@ -835,7 +841,7 @@ const LandingPage = () => {
                             margin: "0 auto",
                         }}
                     >
-                        {courses.slice(0, 5).map((course, index) => (
+                        {courses.slice(0, 6).map((course, index) => (
                             <motion.div
                                 key={index}
                                 whileHover={{
@@ -864,8 +870,13 @@ const LandingPage = () => {
                                     alt={course.title}
                                     style={{
                                         width: "100%",
+                                        maxWidth: "100%",
                                         height: "220px",
-                                        objectFit: "cover",
+                                        minHeight: "220px",
+                                        objectFit: "contain",
+                                        objectPosition: "center",
+                                        display: "block",
+                                        background: "#f8fbff",
                                     }}
                                 />
                                 <div
@@ -875,6 +886,7 @@ const LandingPage = () => {
                                         flexDirection: "column",
                                         justifyContent: "space-between",
                                         flexGrow: 1,
+                                        minHeight: 0,
                                     }}
                                 >
                                     <div>
