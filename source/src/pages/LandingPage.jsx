@@ -4,6 +4,7 @@ import { fetchUserProfile } from "../api/CourseList";
 import "./Homepage.css";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar";
+import InteractiveField from "../components/InteractiveField";
 import LandingPageLoader from "../components/LandingPageLoader";
 
 
@@ -316,7 +317,7 @@ const LandingPage = () => {
                     style={{
                         backgroundImage: 'url("/hero.png")',
                         backgroundSize: "cover",
-                        backgroundPosition: window.innerWidth <= 768 ? "center top" : "center 30%", // ✅ bring image slightly down on desktop
+                        backgroundPosition: window.innerWidth <= 768 ? "center top" : "center 20%", // Adjusted to raise people discussing graphic
                         backgroundRepeat: "no-repeat",
                         minHeight: "clamp(60vh, 80vw, 80vh)",
                         display: "flex",
@@ -332,6 +333,7 @@ const LandingPage = () => {
                     }}
 
                 >
+                <InteractiveField />
                     {/* ✨ Gradient Overlay */}
                     <div
                         style={{
@@ -341,7 +343,7 @@ const LandingPage = () => {
                             right: 0,
                             bottom: 0,
                             background:
-                                "linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.25)), radial-gradient(circle at bottom left, rgba(0,123,255,0.3), transparent 70%)",
+                                "radial-gradient(circle at bottom left, rgba(0,123,255,0.3), transparent 70%)",
                             zIndex: 1,
                         }}
                     ></div>
@@ -1237,10 +1239,10 @@ const LandingPage = () => {
                             whileInView={{ opacity: 1 }}
                             transition={{ delay: 0.2 }}
                         >
-                            For more details or support, feel free to reach out to us on WhatsApp:
+                            For more details or support, feel free to reach out to us through any of these channels:
                         </motion.p>
 
-                        {/* WhatsApp Cards */}
+                        {/* Contact Cards */}
                         <motion.div
                             style={{
                                 display: "flex",
@@ -1252,22 +1254,43 @@ const LandingPage = () => {
                             whileInView={{ opacity: 1 }}
                             transition={{ delay: 0.4 }}
                         >
-                            {[7411572269, 9633375384].map((num, i) => (
+                            {[
+                                {
+                                    href: "https://wa.me/6235436939",
+                                    label: "+91 6235436939",
+                                    icon: (
+                                        <img
+                                            src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+                                            alt="WhatsApp"
+                                            style={{ width: "clamp(20px, 3vw, 25px)", height: "auto" }}
+                                        />
+                                    ),
+                                    text: "WhatsApp",
+                                    bg: "linear-gradient(90deg, #25D366, #128C7E)",
+                                },
+                                {
+                                    href: "mailto:beacoder.network@gmail.com",
+                                    label: "beacoder.network@gmail.com",
+                                    icon: "✉",
+                                    text: "Email",
+                                    bg: "linear-gradient(135deg, #7c3aed 0%, #2563eb 45%, #06b6d4 100%)",
+                                },
+                            ].map((contact, i) => (
                                 <motion.a
                                     key={i}
-                                    href={`https://wa.me/${num}`}
+                                    href={contact.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     whileHover={{
                                         scale: 1.05,
                                         y: -5,
-                                        boxShadow: "0 10px 20px rgba(0,195,255,0.3)",
+                                        boxShadow: "0 14px 30px rgba(37, 99, 235, 0.35)",
                                     }}
                                     transition={{ type: "spring", stiffness: 200 }}
                                     style={{
-                                        background: "linear-gradient(90deg, #00c3ff, #007bff)",
+                                        background: contact.bg,
                                         color: "#fff",
-                                        padding: "clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px)",
+                                        padding: "clamp(12px, 2vw, 16px) clamp(18px, 3vw, 28px)",
                                         borderRadius: "40px",
                                         textDecoration: "none",
                                         fontWeight: 700,
@@ -1276,15 +1299,40 @@ const LandingPage = () => {
                                         alignItems: "center",
                                         justifyContent: "center",
                                         gap: "10px",
-                                        boxShadow: "0 6px 15px rgba(0,195,255,0.3)",
+                                        boxShadow: "0 10px 25px rgba(37, 99, 235, 0.28)",
+                                        border: "1px solid rgba(255,255,255,0.25)",
+                                        position: "relative",
+                                        overflow: "hidden",
                                     }}
                                 >
-                                    <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-                                        alt="WhatsApp"
-                                        style={{ width: "clamp(20px, 3vw, 25px)", height: "auto" }}
+                                    <span
+                                        style={{
+                                            position: "absolute",
+                                            inset: 0,
+                                            background: "linear-gradient(120deg, rgba(255,255,255,0.2), transparent 50%, rgba(255,255,255,0.15))",
+                                            pointerEvents: "none",
+                                        }}
                                     />
-                                    +91 {num}
+                                    <span
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            width: "36px",
+                                            height: "36px",
+                                            borderRadius: "50%",
+                                            background: "rgba(255,255,255,0.18)",
+                                            fontSize: "1rem",
+                                            boxShadow: "0 0 0 4px rgba(255,255,255,0.12)",
+                                            zIndex: 1,
+                                        }}
+                                    >
+                                        {contact.icon}
+                                    </span>
+                                    <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", zIndex: 1 }}>
+                                        <span style={{ fontSize: "0.8rem", opacity: 0.95 }}>{contact.text}</span>
+                                        <span style={{ fontSize: "0.95rem", fontWeight: 700 }}>{contact.label}</span>
+                                    </span>
                                 </motion.a>
                             ))}
                         </motion.div>
@@ -1428,7 +1476,7 @@ const LandingPage = () => {
                                     >
 
                                         <motion.img
-                                            src="https://docs.lightburnsoftware.com/legacy/img/QRCode/ExampleCode.png"
+                                            src="/images/qr.png"
                                             alt="QR Code"
                                             style={{
                                                 width: "200px",
