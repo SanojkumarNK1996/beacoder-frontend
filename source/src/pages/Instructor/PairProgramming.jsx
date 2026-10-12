@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import MainPageLoader from "../../components/MainPageLoader";
-import { InstructorSidebar } from "../../components/InstructorSidebar";
-import { TopBar } from "../../components/TopBar";
+import DashboardLayout from "../../components/DashboardLayout";
 import axios from "axios";
 
 // ✅ Success Toast Component
@@ -28,7 +26,6 @@ const ErrorToast = ({ show, message }) => {
 };
 
 const PairProgramming = () => {
-  const [hovered, setHovered] = useState(null);
   const [userName, setUserName] = useState("Instructor");
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
@@ -146,19 +143,21 @@ const PairProgramming = () => {
   };
 
   if (isLoading) {
-    return <MainPageLoader variant="headerSidebarSkeleton" text="Loading pair programming requests..." />;
+    return <DashboardLayout userName={userName} onLogout={handleLogout}><div className="dashboard-layout__loading" role="status">Loading pair programming requests…</div></DashboardLayout>;
   }
 
   return (
-    <div className="course-list-container">
-      <InstructorSidebar hovered={hovered} setHovered={setHovered} />
-
-      <div className="course-list-main">
-        <TopBar userName={userName} onLogout={handleLogout} />
-
-        <div className="course-list-inner">
-          <div className="course-list-content">
-            <h2 style={{ marginBottom: "20px", color: "#1e1e1e" }}>Pair Programming Requests</h2>
+    <DashboardLayout
+      userName={userName}
+      onLogout={handleLogout}
+      contentClassName="course-list-content"
+      overlays={
+        <>
+          <SuccessToast show={showSuccessToast} message={toastMessage} />
+          <ErrorToast show={showErrorToast} message={toastMessage} />
+        </>
+      }
+    >
 
             <div style={{ marginBottom: "20px", display: "flex", gap: "20px", alignItems: "center" }}>
               <div>
@@ -283,12 +282,7 @@ const PairProgramming = () => {
                 <p>No pair programming requests yet.</p>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-      <SuccessToast show={showSuccessToast} message={toastMessage} />
-      <ErrorToast show={showErrorToast} message={toastMessage} />
-    </div>
+    </DashboardLayout>
   );
 };
 

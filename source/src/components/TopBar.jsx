@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export const TopBar = memo(({ userName, onLogout }) => {
     const navigate = useNavigate();
+    const userRole = localStorage.getItem("userRole");
     const popupRef = useRef(null);
     const profilePopupRef = useRef(null);
     const [showPopup, setShowPopup] = useState(false);
@@ -125,6 +126,8 @@ export const TopBar = memo(({ userName, onLogout }) => {
         <div style={{ 
             display: "flex", 
             alignItems: "center", 
+            width: "calc(100% - 10px)",
+            boxSizing: "border-box",
             padding: "10px 20px", 
             background: "rgba(255, 255, 255, 0.8)", 
             backdropFilter: "blur(10px)",
@@ -143,7 +146,8 @@ export const TopBar = memo(({ userName, onLogout }) => {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "14px",
-                flex: "0 0 auto",
+                flex: "0 1 auto",
+                minWidth: 0,
                 maxWidth: "600px",
                 position: "relative",
                 overflow: "hidden",
@@ -152,8 +156,8 @@ export const TopBar = memo(({ userName, onLogout }) => {
 
                 <span style={{ fontSize: "28px", animation: "bounce 2s infinite", position: "relative", zIndex: 1 }}>✨</span>
                 <span style={{ fontWeight: "600", color: "#367cfe", fontSize: "20px", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: "0", minHeight: "28px" }}>
-                    <span style={{ display: "inline-block", minWidth: "350px", paddingRight: "6px", fontFamily: "'Courier New', monospace", letterSpacing: "0.5px" }}>
-                        {displayedText}
+                    <span style={{ display: "inline-block", minWidth: 0, paddingRight: "6px", fontFamily: "'Courier New', monospace", letterSpacing: "0.5px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <span style={{ textTransform: "capitalize" }}>{displayedText}</span>
                     </span>
                 </span>
             </div>
@@ -230,8 +234,8 @@ export const TopBar = memo(({ userName, onLogout }) => {
                         animation: "slideDownFade 0.3s ease"
                     }}>
                         <div style={{ padding: "12px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
-                            <p style={{ margin: 0, fontWeight: "700", fontSize: "16px" }}>{userName}</p>
-                            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>User Account</p>
+                            <p style={{ margin: 0, fontWeight: "700", fontSize: "16px", textTransform: "capitalize" }}>{userName}</p>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#64748b", textTransform: "capitalize" }}>{userRole}</p>
                         </div>
                         <button 
                             onClick={onLogout}

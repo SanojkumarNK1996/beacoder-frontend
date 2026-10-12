@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaGraduationCap } from "react-icons/fa";
 import SpinningCircleLoader from "../../components/SpinningCircleLoader";
 import { signupUser } from "../../api/SignUp"; // 👈 Import API call
 import "./SignUp.css";
@@ -86,12 +86,22 @@ const SignUp = () => {
     <div className="signup-container">
       <div className="signup-wrapper">
         <div className="signup-left">
-          <h1>Every expert was once a beginner</h1>
-          <p>start your journey today</p>
+          <div className="signup-left-inner">
+            <div className="signup-left-art" aria-hidden="true">
+              <span className="signup-left-spark signup-left-spark--one">✦</span>
+              <FaGraduationCap />
+              <span className="signup-left-spark signup-left-spark--two">✦</span>
+            </div>
+            <h1>Welcome to Beacoder</h1>
+            <p>Start your journey today</p>
+          </div>
         </div>
 
         <div className="signup-right">
-          <h2>Create an Account</h2>
+          <div className="signup-heading">
+            <h2>Create your account</h2>
+            <p>Join Beacoder and start building job-ready skills.</p>
+          </div>
           <form onSubmit={handleSignup}>
             {[
               "fullName",

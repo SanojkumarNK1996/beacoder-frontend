@@ -1,0 +1,23 @@
+.quiz-question-card {
+  border: 1px solid #dce8f8;
+  border-left: 4px solid #8cb8ff;
+  background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+  box-shadow: 0 4px 14px rgba(31, 70, 130, 0.06);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.quiz-question-card:hover {
+  border-color: #a6c5f6;
+  box-shadow: 0 8px 20px rgba(54, 124, 254, 0.11);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-question-card {
+    transition: none;
+  }
+
+  .quiz-question-card:hover {
+    transform: none;
+  }
+}

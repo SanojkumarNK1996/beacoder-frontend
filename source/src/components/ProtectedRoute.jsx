@@ -11,7 +11,8 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   // If a specific role is required, check if user has that role
-  if (requiredRole && userRole !== requiredRole) {
+  const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  if (requiredRole && !allowedRoles.includes(userRole)) {
     // Redirect to appropriate homepage based on their actual role
     if (userRole === "instructor") {
       return <Navigate to="/instructor/assignments" replace />;

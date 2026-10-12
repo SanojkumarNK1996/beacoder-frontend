@@ -1,5 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { FaLock } from "react-icons/fa";
+import { isCourseActive } from "../utils/courseAvailability";
+import { getCourseImageUrl } from "../utils/courseImage";
 
 export const NewCourseCard = ({
   course,
@@ -10,6 +13,7 @@ export const NewCourseCard = ({
   onMouseLeave,
 }) => {
   const navigate = useNavigate();
+  const isLocked = !isCourseActive(course);
 
   const rawCompletion = parseFloat(course?.completionPercentage);
   const isEnrolled = !isNaN(rawCompletion);
@@ -19,10 +23,13 @@ export const NewCourseCard = ({
     : 0;
 
   const handleClick = async () => {
+    if (isLocked) return;
+
     const courseId = course?.id || course?.courseId || course?._id;
 
     if (onButtonClick) {
-      await onButtonClick(course);
+      const result = await onButtonClick(course);
+      if (result === false) return;
       // after enroll (or any onButtonClick side-effect), navigate to course detail
       return navigate(`/courses/${courseId}`);
     }
@@ -60,11 +67,7 @@ export const NewCourseCard = ({
         }}
       >
         <img
-          src={
-            course?.imageUrl?.startsWith("http")
-              ? course.imageUrl
-              : `/images/${course?.imageUrl || "default.png"}`
-          }
+          src={getCourseImageUrl(course?.imageUrl, course?.courseName)}
           alt={course?.courseName}
           style={{ width: 75, height: 75, objectFit: "contain" }}
         />
@@ -73,16 +76,61 @@ export const NewCourseCard = ({
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Title */}
-        <h2
+        <div
           style={{
-            margin: 0,
-            fontSize: 22,
-            fontWeight: 700,
-            color: "#0f1724",
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 10,
           }}
         >
-          {course?.courseName}
-        </h2>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 22,
+              fontWeight: 700,
+              color: "#0f1724",
+            }}
+          >
+            {course?.courseName}
+          </h2>
+          {course?.stream && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "#e8f0ff",
+                color: "#245ec7",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+              }}
+            >
+              {course.stream}
+            </span>
+          )}
+          {isLocked && (
+            <span
+              role="status"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "#fef2f2",
+                color: "#b42318",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              <FaLock aria-hidden="true" />
+              Inactive — You Are Not Enrolled in This Learning Path
+            </span>
+          )}
+        </div>
 
         {/* Enrolled → Bigger Progress */}
         {isEnrolled ? (
@@ -128,7 +176,6 @@ export const NewCourseCard = ({
               fontSize: 16, // ⬆ bigger description
               color: "#475467",
               lineHeight: 1.6,
-              maxWidth: 520,
             }}
           >
             {course?.description}
@@ -138,26 +185,34 @@ export const NewCourseCard = ({
 
       {/* Button */}
       <button
+        type="button"
         onClick={handleClick}
+        disabled={isLocked}
+        aria-label={isLocked ? `${course?.courseName || "Course"} is locked` : undefined}
         style={{
-          background: "#367cfe",
-          color: "#fff",
+          background: isLocked ? "#e4e7ec" : "#367cfe",
+          color: isLocked ? "#667085" : "#fff",
           border: "none",
           borderRadius: 40,
           padding: "14px 28px", // ⬆ bigger button
           fontWeight: 700,
           fontSize: 16, // ⬆ bigger text
-          cursor: "pointer",
+          cursor: isLocked ? "not-allowed" : "pointer",
           transition: "all 0.2s ease",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#2556b8";
+          if (!isLocked) e.currentTarget.style.background = "#2556b8";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#367cfe";
+          if (!isLocked) e.currentTarget.style.background = "#367cfe";
         }}
       >
-        {buttonText}
+        {isLocked ? (
+          <>
+            <FaLock aria-hidden="true" style={{ marginRight: 8 }} />
+            Locked
+          </>
+        ) : isEnrolled ? "Continue" : buttonText}
       </button>
     </div>
   );

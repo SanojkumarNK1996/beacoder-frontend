@@ -65,6 +65,23 @@ body, html, #root { height: 100%; margin: 0; }
   text-align: center;
 }
 
+.signup-heading {
+  width: 100%;
+  max-width: 420px;
+}
+
+.signup-heading h2 {
+  margin-top: 0;
+}
+
+.signup-heading p {
+  margin: 0;
+  color: #315784;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
 .signup-right form {
   width: 100%;
   max-width: 420px;
@@ -217,11 +234,47 @@ body, html, #root { height: 100%; margin: 0; }
   gap: 12px; /* space between the lines */
 }
 
+.signup-left-art {
+  position: relative;
+  display: grid;
+  width: 104px;
+  height: 104px;
+  place-items: center;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 32px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.12));
+  box-shadow: 0 16px 36px rgba(20, 67, 160, 0.18), inset 0 1px rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 54px;
+  transform: rotate(-5deg);
+}
+
+.signup-left-spark {
+  position: absolute;
+  color: #fff4b8;
+  font-size: 20px;
+  text-shadow: 0 2px 10px rgba(16, 55, 132, 0.24);
+}
+
+.signup-left-spark--one {
+  top: 4px;
+  right: -23px;
+}
+
+.signup-left-spark--two {
+  bottom: 0;
+  left: -24px;
+  font-size: 15px;
+}
+
 .signup-left h1 {
   font-size: clamp(1.6rem, 3vw, 2.8rem);
+  margin-top: 0;
   margin-bottom: 0;
   font-weight: 800;
   letter-spacing: 0.6px;
+  text-shadow: 0 2px 14px rgba(16, 55, 132, 0.18);
   display: block;
   width: 100%;
 }

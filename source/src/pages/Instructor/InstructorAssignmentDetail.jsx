@@ -1,38 +1,28 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { InstructorSidebar } from "../../components/InstructorSidebar";
-import { TopBar } from "../../components/TopBar";
-import {
-  FaArrowLeft,
-  FaUser,
-  FaCalendarAlt,
-  FaLink,
-  FaBookOpen,
-  FaStar,
-  FaCheck,
-  FaTimes,
-} from "react-icons/fa";
+import DashboardLayout from "../../components/DashboardLayout";
+import { FaArrowLeft, FaUser, FaCalendarAlt, FaLink, FaBookOpen, FaStar, FaClock, FaCheck, FaTimes, FaList, FaLightbulb, FaFileAlt, FaRocket } from "react-icons/fa";
 import axios from "axios";
+import { descriptionToText, normalizeAssignmentDescription } from "../../utils/assignmentDescription";
 import "./InstructorAssignmentDetail.css";
 
-const AcceptedToast = ({ show }) => {
-  if (!show) return null;
-  return (
-    <div className="toast success">
-      <span className="toast-icon">✔</span>
-      Assignment accepted successfully!
-    </div>
-  );
+const getRow = (payload) => {
+  if (payload?.userAssignment) return payload.userAssignment;
+  if (payload?.submission) return payload.submission;
+  if (payload?.assignment && typeof payload.assignment === "object") return payload.assignment;
+  if (payload?.data) return getRow(payload.data);
+  return payload?.id ? payload : null;
 };
 
-const RejectedToast = ({ show }) => {
-  if (!show) return null;
-  return (
-    <div className="toast failed">
-      <span className="toast-icon">✖</span>
-      Assignment rejected successfully!
-    </div>
-  );
+const formatDate = (value) => value ? new Date(value).toLocaleString() : "—";
+
+const formatElapsedTime = (startedAt, submittedAt) => {
+  if (!startedAt || !submittedAt) return null;
+  const elapsedMinutes = Math.floor((new Date(submittedAt).getTime() - new Date(startedAt).getTime()) / 60000);
+  if (!Number.isFinite(elapsedMinutes) || elapsedMinutes < 0) return null;
+  const hours = Math.floor(elapsedMinutes / 60);
+  const minutes = elapsedMinutes % 60;
+  return hours ? `${hours}h ${minutes}m` : `${minutes}m`;
 };
 
 const InstructorAssignmentDetail = () => {
@@ -40,356 +30,240 @@ const InstructorAssignmentDetail = () => {
   const location = useLocation();
   const submission = location.state?.submission;
   const userName = location.state?.userName || "Instructor";
-
-  const [hovered, setHovered] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const [marksObtained, setMarksObtained] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAcceptedToast, setShowAcceptedToast] = useState(false);
-  const [showRejectedToast, setShowRejectedToast] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [savedMessage, setSavedMessage] = useState("");
   const [detailedSubmission, setDetailedSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [detailError, setDetailError] = useState(null);
+  const [detailError, setDetailError] = useState("");
+  const [reviewError, setReviewError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     const fetchSubmissionDetails = async () => {
-      const submissionId = submission?.id || submission?.submissionId || submission?.assignmentSubmissionId;
+      const submissionId = submission?.id;
       if (!submissionId) {
         setLoading(false);
         return;
       }
-
       try {
-        setDetailError(null);
         const token = localStorage.getItem("authToken");
         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-
         const response = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/api/v1/assignments/admin/submitted/${submissionId}`,
           config
         );
-        const data = response.data;
-
-        let fetched = null;
-        if (data?.success && data.assignment) fetched = data.assignment;
-        else if (data?.success && data.data) fetched = data.data;
-        else if (data?.assignment) fetched = data.assignment;
-        else if (data?.data) fetched = data.data;
-        else if (data?.submission) fetched = data.submission;
-        else if (data?.id) fetched = data;
-
-        if (fetched) {
+        const fetched = getRow(response.data);
+        if (!cancelled && fetched) {
           setDetailedSubmission(fetched);
           setFeedback(fetched.feedback ?? submission.feedback ?? "");
-        } else {
-          setDetailError("Could not parse submission details from server, showing available data.");
+          setMarksObtained(fetched.marksObtained ?? "");
+        } else if (!cancelled) {
+          setDetailError("Could not read assignment submission details.");
         }
       } catch (error) {
-        console.error("Error fetching submission details:", error);
-        setDetailError("Failed to load submission details. Please try again.");
+        if (!cancelled) {
+          console.error("Error fetching submission details:", error);
+          setDetailError(error.response?.data?.message || "Failed to load submission details.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
     fetchSubmissionDetails();
+    return () => {
+      cancelled = true;
+    };
   }, [submission]);
+
+  const saveReview = async (status) => {
+    const submissionId = submission?.id;
+    const marks = Number(marksObtained);
+    if (!submissionId) {
+      setReviewError("Submission ID is missing.");
+      return;
+    }
+    if (status === "completed" && (marksObtained === "" || !Number.isInteger(marks) || marks < 0)) {
+      setReviewError("Enter a whole-number mark of zero or greater.");
+      return;
+    }
+    const reviewFeedback = feedback.trim();
+    if (status === "rejected" && !reviewFeedback) {
+      setReviewError("Add a comment explaining why this submission is being rejected.");
+      return;
+    }
+    setReviewError("");
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("authToken");
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const payload = {
+        status,
+        ...(status === "completed" ? { marksObtained: marks } : {}),
+        ...(status === "rejected" ? { marksObtained: null } : {}),
+        feedback: reviewFeedback,
+      };
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/assignments/admin/submitted/${submissionId}`,
+        payload,
+        config
+      );
+      setDetailedSubmission((current) => ({
+        ...(current || submission),
+        ...payload,
+        ...(status === "rejected" ? { completedAt: null } : {}),
+      }));
+      setSavedMessage(status === "rejected"
+        ? "Submission rejected. Your comment has been sent to the learner."
+        : "Review saved. Marked completed.");
+      setSaved(true);
+      setTimeout(() => navigate(-1), 1200);
+    } catch (error) {
+      console.error("Error saving assignment review:", error);
+      setReviewError(error.response?.data?.message || "Failed to save the assignment review.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const finishReview = (event) => {
+    event.preventDefault();
+    saveReview("completed");
+  };
 
   if (!submission) {
     return (
-      <div className="course-list-container">
-        <InstructorSidebar hovered={hovered} setHovered={setHovered} />
-        <div className="course-list-main">
-          <TopBar userName={userName} />
-          <div className="course-list-inner">
-            <div className="course-list-content">
-              <div className="no-data">
-                <p>No assignment data found.</p>
-                <button onClick={() => navigate(-1)} className="back-btn">
-                  <FaArrowLeft /> Go Back
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardLayout userName={userName} contentClassName="course-list-content assignment-review-content">
+        <div className="no-data"><p>No assignment submission found.</p><button onClick={() => navigate(-1)} className="back-btn"><FaArrowLeft /> Go Back</button></div>
+      </DashboardLayout>
     );
   }
 
   if (loading) {
     return (
-      <div className="course-list-container">
-        <InstructorSidebar hovered={hovered} setHovered={setHovered} />
-        <div className="course-list-main">
-          <TopBar userName={userName} />
-          <div className="course-list-inner">
-            <div className="course-list-content">
-              <div className="loading">
-                <p>Loading assignment details...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardLayout userName={userName} contentClassName="course-list-content assignment-review-content">
+        <div className="loading"><p>Loading assignment details...</p></div>
+      </DashboardLayout>
     );
   }
 
   const currentSubmission = detailedSubmission || submission;
-  const maxMarks = currentSubmission.Assignment?.maxMarks || 100;
-
-  const handleAccept = async () => {
-    const submissionId = submission?.id || submission?.submissionId || submission?.assignmentSubmissionId;
-    if (!submissionId) {
-      alert("Submission ID is missing.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const token = localStorage.getItem("authToken");
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-
-      const payload = {
-        status: "accepted",
-        feedback: feedback,
-      };
-
-      await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/assignments/admin/submitted/${submissionId}`,
-        payload,
-        config
-      );
-
-      setShowAcceptedToast(true);
-      setTimeout(() => {
-        setShowAcceptedToast(false);
-        navigate(-1);
-      }, 1500);
-    } catch (error) {
-      console.error("Error accepting assignment:", error);
-      alert("Failed to accept assignment. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleReject = async () => {
-    const submissionId = submission?.id || submission?.submissionId || submission?.assignmentSubmissionId;
-    if (!submissionId) {
-      alert("Submission ID is missing.");
-      return;
-    }
-
-    if (!feedback || feedback.trim() === "") {
-      alert("Please provide feedback before rejecting");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const token = localStorage.getItem("authToken");
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-
-      const payload = {
-        status: "rejected",
-        feedback: feedback,
-      };
-
-      await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/assignments/admin/submitted/${submissionId}`,
-        payload,
-        config
-      );
-
-      setShowRejectedToast(true);
-      setTimeout(() => {
-        setShowRejectedToast(false);
-        navigate(-1);
-      }, 1500);
-    } catch (error) {
-      console.error("Error rejecting assignment:", error);
-      alert("Failed to reject assignment. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const assignment = currentSubmission.Assignment || {};
+  const description = normalizeAssignmentDescription(assignment.description);
+  const taskLines = descriptionToText(description.task)
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const descriptionSections = [
+    ["learningBenefits", "Learning Benefits", <FaLightbulb aria-hidden="true" />],
+    ["context", "Context", <FaFileAlt aria-hidden="true" />],
+    ["expectedOutput", "Expected Output", <FaRocket aria-hidden="true" />],
+  ].map(([key, label, icon]) => ({
+    key,
+    label,
+    icon,
+    content: descriptionToText(description[key]),
+  })).filter(({ content }) => content);
+  const answerText = currentSubmission.textAnswer || currentSubmission.answer;
+  const elapsedTime = formatElapsedTime(currentSubmission.startedAt, currentSubmission.submittedAt);
 
   return (
-    <>
-      <AcceptedToast show={showAcceptedToast} />
-      <RejectedToast show={showRejectedToast} />
+    <DashboardLayout
+      userName={userName}
+      contentClassName="course-list-content assignment-review-content"
+      pageTitle={assignment.title || "Assignment Review"}
+      pageDescription="Review the submission and share feedback with the learner."
+      overlays={saved && <div className="assignment-manager-message success"><FaCheck /> {savedMessage}</div>}
+    >
+            <div className="detail-header"><button onClick={() => navigate(-1)} className="back-btn"><FaArrowLeft /> Back to Assignments</button></div>
+            {detailError && <div className="detail-error" role="alert">{detailError}</div>}
+            <div className="detail-content">
+              <section className="detail-section assignment-info-section">
+                <div className="meta-summary-bar">
+                  <div className="meta-pill"><span className="meta-label"><FaBookOpen /> Course</span><span className="meta-value">{assignment.Subtopic?.CourseTopic?.Course?.courseName || "—"}</span></div>
+                  <div className="meta-pill"><span className="meta-label"><FaStar /> Difficulty</span><span className="meta-value">{assignment.difficulty ? `${assignment.difficulty.charAt(0).toUpperCase()}${assignment.difficulty.slice(1)}` : "—"}</span></div>
+                  <div className="meta-pill"><span className="meta-label"><FaUser /> Submitted by</span><span className="meta-value">{currentSubmission.User?.name || currentSubmission.User?.email || "Student"}</span></div>
+                  <div className="meta-pill"><span className="meta-label"><FaCalendarAlt /> Submitted on</span><span className="meta-value">{formatDate(currentSubmission.submittedAt)}</span></div>
+                  <div className="meta-pill"><span className="meta-label"><FaStar /> Status</span><span className={`status-badge-detail ${currentSubmission.status}`}>{currentSubmission.status || "submitted"}</span></div>
+                  {currentSubmission.marksObtained != null && <div className="meta-pill"><span className="meta-label"><FaCheck /> Marks</span><span className="meta-value">{currentSubmission.marksObtained}</span></div>}
+                </div>
+              </section>
 
-      <div className="course-list-container">
-        <InstructorSidebar hovered={hovered} setHovered={setHovered} />
+              {description && (
+                <section className="detail-section description-section">
+                  <h3 className="section-title">Assignment Details</h3>
+                  <div className="description-content">
+                    <div className="desc-item desc-task-item">
+                      <div className="desc-heading"><FaList aria-hidden="true" /><strong>Task</strong></div>
+                      <div className="desc-task-list">
+                        {taskLines.length
+                          ? taskLines.map((line, index) => (
+                            <div className="desc-task-step" key={`${index}-${line}`}>
+                              <span>{index + 1}</span><p>{line}</p>
+                            </div>
+                          ))
+                          : <p className="desc-empty">No task details have been added.</p>}
+                      </div>
+                    </div>
+                    {descriptionSections.map(({ key, label, icon, content }) => (
+                      <div className={`desc-item desc-${key}`} key={key}>
+                        <div className="desc-heading">{icon}<strong>{label}</strong></div>
+                        {key === "expectedOutput"
+                          ? <pre className="desc-output">{content}</pre>
+                          : <p>{content}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-        <div className="course-list-main">
-          <TopBar userName={userName} />
+              {(currentSubmission.startedAt || elapsedTime || currentSubmission.time != null || currentSubmission.timeTaken != null || currentSubmission.timeSpent != null || currentSubmission.submissionUrl || answerText) && (
+                <div className="detail-tile-row">
+                  {(currentSubmission.startedAt || elapsedTime || currentSubmission.time != null || currentSubmission.timeTaken != null || currentSubmission.timeSpent != null) && (
+                    <section className="detail-section detail-tile timing-tile">
+                      <h3 className="section-title"><FaClock /> Timing</h3>
+                      <div className="compact-metric-list">
+                        {currentSubmission.startedAt && <div className="compact-metric"><span className="compact-metric-label">Started</span><span>{formatDate(currentSubmission.startedAt)}</span></div>}
+                        {elapsedTime && <div className="compact-metric"><span className="compact-metric-label">Time spent</span><span>{elapsedTime}</span></div>}
+                        {!elapsedTime && (currentSubmission.time ?? currentSubmission.timeTaken ?? currentSubmission.timeSpent) != null && <div className="compact-metric"><span className="compact-metric-label">Time spent</span><span>{currentSubmission.time ?? currentSubmission.timeTaken ?? currentSubmission.timeSpent}</span></div>}
+                      </div>
+                    </section>
+                  )}
 
-          <div className="course-list-inner">
-            <div className="course-list-content">
-              <div className="detail-header">
-                <button onClick={() => navigate(-1)} className="back-btn">
-                  <FaArrowLeft /> Back to Assignments
-                </button>
-              </div>
-
-              {detailError && (
-                <div className="detail-error">
-                  {detailError}
+                  {(currentSubmission.submissionUrl || answerText) && (
+                    <section className="detail-section detail-tile submission-section">
+                      <h3 className="section-title">Student's Answer</h3>
+                      {currentSubmission.submissionUrl && <div className="submission-content"><FaLink className="link-icon" /><a href={currentSubmission.submissionUrl} target="_blank" rel="noopener noreferrer" className="submission-link-detail">View Submission</a></div>}
+                      {answerText && <div className="text-answer-content"><p>{answerText}</p></div>}
+                    </section>
+                  )}
                 </div>
               )}
 
-              <div className="detail-content">
-                {/* Assignment Info Section */}
-                <div className="detail-section assignment-info-section">
-                  <h1 className="detail-title">{currentSubmission.Assignment?.title}</h1>
+              {currentSubmission.feedback && <section className="detail-section"><h3 className="section-title">Previous Feedback</h3><p>{currentSubmission.feedback}</p></section>}
 
-                  <div className="info-grid">
-                    <div className="info-item">
-                      <span className="info-label">
-                        <FaBookOpen /> Course
-                      </span>
-                      <span className="info-value">{currentSubmission.Assignment?.Course?.courseName}</span>
-                    </div>
-
-                    <div className="info-item">
-                      <span className="info-label">
-                        <FaUser /> Submitted by
-                      </span>
-                      <span className="info-value">
-                        {currentSubmission.User?.name} ({currentSubmission.User?.email})
-                      </span>
-                    </div>
-
-                    <div className="info-item">
-                      <span className="info-label">
-                        <FaCalendarAlt /> Submitted on
-                      </span>
-                      <span className="info-value">
-                        {new Date(currentSubmission.submittedAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-
-                    <div className="info-item">
-                      <span className="info-label">
-                        <FaStar /> Status
-                      </span>
-                      <span className={`status-badge-detail ${currentSubmission.status}`}>
-                        {currentSubmission.status}
-                      </span>
-                    </div>
+              <section className="detail-section review-section">
+                <h3 className="section-title">Complete Review</h3>
+                <form className="review-form" onSubmit={finishReview}>
+                  <div className="form-group">
+                    <label htmlFor="marksObtained" className="form-label">Marks</label>
+                    <input id="marksObtained" className="form-input" type="number" min="0" step="1" value={marksObtained} onChange={(event) => setMarksObtained(event.target.value)} required />
                   </div>
-                </div>
-
-                {/* Assignment Description Section */}
-                {currentSubmission.Assignment?.description && (
-                  <div className="detail-section description-section">
-                    <h3 className="section-title">Assignment Details</h3>
-                    <div className="description-content">
-                      {currentSubmission.Assignment.description.task && (
-                        <div className="desc-item">
-                          <strong>Task:</strong>
-                          <p>{currentSubmission.Assignment.description.task}</p>
-                        </div>
-                      )}
-                      {currentSubmission.Assignment.description.context && (
-                        <div className="desc-item">
-                          <strong>Context:</strong>
-                          <p>{currentSubmission.Assignment.description.context}</p>
-                        </div>
-                      )}
-                      {currentSubmission.Assignment.description.instructions && (
-                        <div className="desc-item">
-                          <strong>Instructions:</strong>
-                          <ul>
-                            {currentSubmission.Assignment.description.instructions.map(
-                              (instruction, index) => (
-                                <li key={index}>{instruction}</li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
+                  <div className="form-group">
+                    <label htmlFor="feedback" className="form-label">Feedback</label>
+                    <textarea id="feedback" value={feedback} onChange={(event) => setFeedback(event.target.value)} placeholder="Share feedback with the student..." className="feedback-textarea" rows="6" />
                   </div>
-                )}
-
-                {/* Submission Link Section */}
-                {currentSubmission.submissionUrl && (
-                  <div className="detail-section submission-section">
-                    <h3 className="section-title">Student Submission</h3>
-                    <div className="submission-content">
-                      <FaLink className="link-icon" />
-                      <a
-                        href={currentSubmission.submissionUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="submission-link-detail"
-                      >
-                        View Submission
-                      </a>
-                    </div>
+                  {reviewError && <div className="detail-error" role="alert">{reviewError}</div>}
+                  <div className="action-buttons">
+                    <button type="submit" disabled={isSubmitting || saved} className="accept-btn btn"><FaCheck />{isSubmitting ? "Saving..." : currentSubmission.status === "completed" ? "Update Review" : "Mark Completed"}</button>
+                    <button type="button" disabled={isSubmitting || saved} onClick={() => saveReview("rejected")} className="reject-btn btn"><FaTimes />{isSubmitting ? "Saving..." : currentSubmission.status === "rejected" ? "Update Rejection" : "Reject with Feedback"}</button>
                   </div>
-                )}
-
-                {/* Text Answer Section */}
-                {currentSubmission.textAnswer && (
-                  <div className="detail-section text-answer-section">
-                    <h3 className="section-title">Student's Answer</h3>
-                    <div className="text-answer-content">
-                      <p>{currentSubmission.textAnswer}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Review Section */}
-                <div className="detail-section review-section">
-                  <h3 className="section-title">Review & Feedback</h3>
-
-                  <div className="review-form">
-                    <div className="form-group">
-                      <label htmlFor="feedback" className="form-label">
-                        Feedback
-                      </label>
-                      <textarea
-                        id="feedback"
-                        value={feedback}
-                        onChange={(e) => setFeedback(e.target.value)}
-                        placeholder="Enter your feedback here..."
-                        className="feedback-textarea"
-                        rows="6"
-                      />
-                    </div>
-
-                    <div className="action-buttons">
-                      <button
-                        onClick={handleAccept}
-                        disabled={isSubmitting}
-                        className="accept-btn btn"
-                      >
-                        <FaCheck /> Accept
-                      </button>
-                      <button
-                        onClick={handleReject}
-                        disabled={isSubmitting}
-                        className="reject-btn btn"
-                      >
-                        <FaTimes /> Reject
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </form>
+              </section>
             </div>
-          </div>
-        </div>
-      </div>
-    </>
+    </DashboardLayout>
   );
 };
 
