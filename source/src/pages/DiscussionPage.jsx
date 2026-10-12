@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { Sidebar } from "../components/Sidebar";
-import { TopBar } from "../components/TopBar";
-import { CourseListRightSidebar } from "../components/CourseListRightSidebar";
-import MainPageLoader from "../components/MainPageLoader";
+import { FaComments, FaPlus } from "react-icons/fa";
+import DashboardLayout from "../components/DashboardLayout";
 import { fetchUserProfile } from "../api/CourseList";
 import "./DiscussionPage.css";
 
@@ -79,9 +77,9 @@ const CreateDiscussionModal = ({ show, onClose, onSubmit, onError }) => {
       const token = localStorage.getItem("authToken");
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/assignments/my-assignments`, config);
-      if (response.data.success) {
-        setAssignments(response.data.assignments);
-      }
+      const data = response.data;
+      const rows = Array.isArray(data) ? data : data?.assignments || data?.data?.assignments || data?.data || [];
+      setAssignments(Array.isArray(rows) ? rows : []);
     } catch (error) {
       console.error("Error fetching assignments:", error);
     }
@@ -192,9 +190,9 @@ const CreateDiscussionModal = ({ show, onClose, onSubmit, onError }) => {
               onChange={handleInputChange}
             >
               <option value="">Select an assignment</option>
-              {assignments.map(assignment => (
-                <option key={assignment.id} value={assignment.id}>
-                  {assignment.Assignment?.title}
+              {assignments.filter((row) => row.Assignment?.id).map((row) => (
+                <option key={row.Assignment.id} value={row.Assignment.id}>
+                  {row.Assignment.title || `Assignment ${row.Assignment.id}`}
                 </option>
               ))}
             </select>
@@ -398,52 +396,12 @@ const RequestPairProgrammingModal = ({ show, onClose, onSubmit, onError, discuss
   );
 };
 
-const getBadgeIcon = (name) => {
-  const normalized = name?.toLowerCase() || "";
-  if (normalized.includes("first")) return "👣";
-  if (normalized.includes("master") || normalized.includes("quiz")) return "🏆";
-  if (normalized.includes("consistency") || normalized.includes("streak")) return "🔥";
-  if (normalized.includes("challenge") || normalized.includes("milestone")) return "🎯";
-  if (normalized.includes("learning")) return "📘";
-  return "🎖️";
-};
-
-const fetchBadges = async (token, setAchievements) => {
-  try {
-    const config = {};
-    if (token) config.headers = { Authorization: `Bearer ${token}` };
-    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/user/badges`, config);
-    const badges = response.data.badges || [];
-    if (badges.length === 0) {
-      setAchievements([]);
-      return;
-    }
-    setAchievements(
-      badges.map((item) => {
-        const badge = item.Badge || {};
-        return {
-          id: item.id,
-          title: badge.name || "Badge",
-          description: badge.description || "Earned a badge",
-          icon: getBadgeIcon(badge.name),
-        };
-      })
-    );
-  } catch (error) {
-    console.error("Error fetching badges:", error);
-    setAchievements([]);
-  }
-};
-
 const DiscussionPage = () => {
   const { discussionId } = useParams();
-  const [hovered, setHovered] = useState(null);
-  const [active, setActive] = useState(3); // Discussions is index 3 in sidebar
   const [discussions, setDiscussions] = useState([]);
   const [selectedDiscussion, setSelectedDiscussion] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [userName, setUserName] = useState("User");
-  const [achievements, setAchievements] = useState([]);
   const [showLogoutToast, setShowLogoutToast] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState("all"); // "all" or "me"
@@ -486,16 +444,14 @@ const DiscussionPage = () => {
           }
         }
 
-        // Fetch user profile and badges
+        // Fetch user profile
         if (isMounted) {
           try {
             const userData = await fetchUserProfile(token);
             setUserName(userData.userName);
-            await fetchBadges(token, setAchievements);
           } catch (error) {
             console.error("Error fetching user data:", error);
             setUserName("User");
-            setAchievements([]);
           }
         }
       } catch (error) {
@@ -578,52 +534,64 @@ const DiscussionPage = () => {
 
   if (isLoading) {
     return (
-      <MainPageLoader
-        variant="headerSidebarSkeleton"
-        text="Loading discussions..."
-      />
+      <DashboardLayout userName={userName} onLogout={handleLogout} contentClassName="discussion-content" pageTitle={discussionId ? "Discussion Details" : "Discussions"}><div className="dashboard-layout__loading" role="status">Loading discussions…</div></DashboardLayout>
     );
   }
 
   return (
-    <>
-      <LogoutToast show={showLogoutToast} />
-      <DiscussionSuccessToast show={showSuccessToast} message={successMsg} />
-      <DiscussionFailedToast show={showFailedToast} message={errorMsg} />
-      <div className="discussion-container">
-      <Sidebar
-        active={active}
-        hovered={hovered}
-        setActive={setActive}
-        setHovered={setHovered}
-      />
-
-      <div className="discussion-main">
-        <TopBar userName={userName} onLogout={handleLogout} />
-
-        <div className="discussion-inner">
-          <div className="discussion-content">
+    <DashboardLayout
+      userName={userName}
+      onLogout={handleLogout}
+      contentClassName="discussion-content"
+      pageTitle={discussionId ? selectedDiscussion?.title || "Discussion Details" : "Discussions"}
+      pageDescription={discussionId ? "Follow the conversation and share a reply." : "Ask questions, share ideas, and learn together."}
+      overlays={<>
+        <LogoutToast show={showLogoutToast} />
+        <DiscussionSuccessToast show={showSuccessToast} message={successMsg} />
+        <DiscussionFailedToast show={showFailedToast} message={errorMsg} />
+        <CreateDiscussionModal
+          show={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleDiscussionCreated}
+          onError={handleDiscussionError}
+        />
+        <RequestPairProgrammingModal
+          show={showRequestPairModal}
+          onClose={() => {
+            setShowRequestPairModal(false);
+            setCurrentDiscussionId(null);
+          }}
+          onSubmit={handlePairProgrammingSuccess}
+          onError={handleDiscussionError}
+          discussionId={currentDiscussionId}
+        />
+      </>}
+    >
             <div className="discussion-list-section">
               <div className="discussion-filter-header">
-                <h2 className="discussion-section-title">Discussions</h2>
                 <div className="discussion-header-actions">
                   {!discussionId && (
                     <>
-                      <div className="discussion-filter-buttons">
+                      <div className="discussion-filter-buttons" role="group" aria-label="Filter discussions">
                         <button
+                          type="button"
                           className={`filter-btn ${filter === "all" ? "active" : ""}`}
+                          aria-pressed={filter === "all"}
                           onClick={() => setFilter("all")}
                         >
                           All
                         </button>
                         <button
+                          type="button"
                           className={`filter-btn ${filter === "me" ? "active" : ""}`}
+                          aria-pressed={filter === "me"}
                           onClick={() => setFilter("me")}
                         >
                           Me
                         </button>
                       </div>
-                      <button className="create-discussion-btn" onClick={handleCreateDiscussion}>
+                      <button type="button" className="create-discussion-btn" onClick={handleCreateDiscussion}>
+                        <FaPlus aria-hidden="true" />
                         Create Discussion
                       </button>
                     </>
@@ -668,8 +636,8 @@ const DiscussionPage = () => {
                           style={{ cursor: !discussionId ? 'pointer' : 'default' }}
                         >
                           <div className="discussion-card-content">
-                            <h3 className="discussion-title">{discussion.title}</h3>
-                            <p className="discussion-description">{discussion.description}</p>
+                            {!discussionId && <h3 className="discussion-title">{discussion.title}</h3>}
+                            {!discussionId && <p className="discussion-description">{discussion.description}</p>}
                             <div className="discussion-card-footer">
                               <div className="discussion-meta">
                                 <span className="discussion-author">By {discussion.User?.name || "Unknown"}</span>
@@ -702,9 +670,8 @@ const DiscussionPage = () => {
 
                   {discussionId && selectedDiscussion && (
                     <div className="discussion-reply-container">
-                      <div className="discussion-detail-header">
-                        <h3>{selectedDiscussion.title}</h3>
-                        <div className="discussion-status">
+                    <div className="discussion-detail-header">
+                      <div className="discussion-status">
                           <span className={`status-badge ${selectedDiscussion.status === 'closed' ? 'closed' : 'open'}`}>
                             {selectedDiscussion.status || 'open'}
                           </span>
@@ -779,37 +746,29 @@ const DiscussionPage = () => {
                   )}
                 </>
               ) : (
-                <div className="no-discussions">
-                  <p>No discussions found.</p>
+                <div className="no-discussions" role="status">
+                  <span className="no-discussions-icon" aria-hidden="true"><FaComments /></span>
+                  <h2>{discussionId ? "Discussion not found" : filter === "me" ? "No discussions from you yet" : "No discussions yet"}</h2>
+                  <p>
+                    {discussionId
+                      ? "This conversation may have been removed or is no longer available."
+                      : filter === "me"
+                        ? "Discussions you start will appear here."
+                        : "Start the conversation by sharing a question or idea with the community."}
+                  </p>
+                  {discussionId ? (
+                    <button type="button" className="no-discussions-action" onClick={() => navigate("/discussions")}>
+                      Back to discussions
+                    </button>
+                  ) : (
+                    <button type="button" className="no-discussions-action" onClick={handleCreateDiscussion}>
+                      <FaPlus aria-hidden="true" /> Start a discussion
+                    </button>
+                  )}
                 </div>
               )}
             </div>
-          </div>
-
-          <CourseListRightSidebar achievements={achievements} />
-        </div>
-      </div>
-
-      <LogoutToast show={showLogoutToast} />
-
-      <CreateDiscussionModal
-        show={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSubmit={handleDiscussionCreated}
-        onError={handleDiscussionError}
-      />
-      <RequestPairProgrammingModal
-        show={showRequestPairModal}
-        onClose={() => {
-          setShowRequestPairModal(false);
-          setCurrentDiscussionId(null);
-        }}
-        onSubmit={handlePairProgrammingSuccess}
-        onError={handleDiscussionError}
-        discussionId={currentDiscussionId}
-      />
-    </div>
-    </>
+    </DashboardLayout>
   );
 };
 

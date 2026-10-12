@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { InstructorSidebar } from "../../components/InstructorSidebar";
-import { TopBar } from "../../components/TopBar";
-import MainPageLoader from "../../components/MainPageLoader";
+import DashboardLayout from "../../components/DashboardLayout";
 import axios from "axios";
 import "./InstructorAssignmentDetail.css";
 
@@ -20,7 +18,6 @@ const InstructorDiscussionDetail = () => {
   const { discussionId } = useParams();
   const navigate = useNavigate();
 
-  const [hovered, setHovered] = useState(null);
   const [userName, setUserName] = useState("Instructor");
   const [discussion, setDiscussion] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,10 +125,6 @@ const InstructorDiscussionDetail = () => {
   const [closeStatus, setCloseStatus] = useState("");
   const [closeError, setCloseError] = useState("");
 
-  const handleReplyClose = () => {
-    navigate("/instructor/discussions");
-  };
-
   const handleCloseDiscussion = async () => {
     setCloseError("");
     setCloseStatus("");
@@ -165,20 +158,21 @@ const InstructorDiscussionDetail = () => {
   };
 
   if (isLoading) {
-    return <MainPageLoader variant="headerSidebarSkeleton" text="Loading discussion details..." />;
+    return <DashboardLayout userName={userName}><div className="dashboard-layout__loading" role="status">Loading discussion details…</div></DashboardLayout>;
   }
 
   const parsedAssignment = discussion?.Assignment;
 
   return (
     <>
-      <CloseDiscussionToast show={showCloseToast} />
-      <div className="course-list-container">
-        <InstructorSidebar hovered={hovered} setHovered={setHovered} />
-      <div className="course-list-main">
-        <TopBar userName={userName} onLogout={() => { localStorage.removeItem("authToken"); localStorage.removeItem("userRole"); navigate("/login"); }} />
-        <div className="course-list-inner">
-          <div className="course-list-content">
+      <DashboardLayout
+        userName={userName}
+        pageTitle={discussion?.title || "Discussion Details"}
+        pageDescription="Review the conversation and follow its replies."
+        onLogout={() => { localStorage.removeItem("authToken"); localStorage.removeItem("userRole"); navigate("/login"); }}
+        contentClassName="course-list-content"
+        overlays={<CloseDiscussionToast show={showCloseToast} />}
+      >
             <div className="detail-header">
               <button onClick={() => navigate("/instructor/discussions")} className="back-btn">
                 ← Back to discussions
@@ -198,8 +192,6 @@ const InstructorDiscussionDetail = () => {
                 </div>
               ) : (
                 <div className="detail-section">
-                  <h1 className="detail-title">{discussion.title}</h1>
-
                   <div className="info-grid">
                     <div className="info-item">
                       <span className="info-label">Status</span>
@@ -266,20 +258,16 @@ const InstructorDiscussionDetail = () => {
                                   <p>{parsedAssignment.description.task}</p>
                                 </div>
                               )}
+                              {parsedAssignment.description.learningBenefits && (
+                                <div className="desc-item">
+                                  <strong>Learning benefits</strong>
+                                  <p>{parsedAssignment.description.learningBenefits}</p>
+                                </div>
+                              )}
                               {parsedAssignment.description.context && (
                                 <div className="desc-item">
                                   <strong>Context</strong>
                                   <p>{parsedAssignment.description.context}</p>
-                                </div>
-                              )}
-                              {parsedAssignment.description.instructions && (
-                                <div className="desc-item">
-                                  <strong>Instructions</strong>
-                                  <ul>
-                                    {parsedAssignment.description.instructions.map((ins, index) => (
-                                      <li key={index}>{ins}</li>
-                                    ))}
-                                  </ul>
                                 </div>
                               )}
                               {parsedAssignment.description.expectedOutput && (
@@ -355,10 +343,7 @@ const InstructorDiscussionDetail = () => {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </DashboardLayout>
   </>
   );
 };

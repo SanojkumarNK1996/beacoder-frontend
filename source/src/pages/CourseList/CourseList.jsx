@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sidebar } from "../../components/Sidebar";
-import { TopBar } from "../../components/TopBar";
-import { CourseListRightSidebar } from "../../components/CourseListRightSidebar";
+import { FaSearch, FaTimes } from "react-icons/fa";
+import DashboardLayout from "../../components/DashboardLayout";
 import NewCourseContainer from "../../components/NewCoursesContainer";
-import MainPageLoader from "../../components/MainPageLoader";
 import "./CourseList.css";
-import axios from "axios";
-import { fetchCourses, fetchUserProfile, enrollCourse } from "../../api/CourseList"; 
+import { fetchCourses, fetchEnrolledCourses, fetchUserProfile, enrollCourse } from "../../api/CourseList";
+import { isCourseActive } from "../../utils/courseAvailability";
 
 // ✅ Logout Toast Component
 const LogoutToast = ({ show }) => {
@@ -20,89 +18,33 @@ const LogoutToast = ({ show }) => {
   );
 };
 
-const initialActivities = [
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",
-    title: "Completed: Variables & Data Types",
-    date: "Aug 15 - 12:00 PM",
-  },
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
-    title: "Attempted: Quiz - Java Basics",
-    date: "Aug 17 - 12:00 PM",
-  },
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",
-    title: "Completed: Variables & Data Types",
-    date: "Aug 15 - 12:00 PM",
-  },
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
-    title: "Earned: First 10 Lessons Badge",
-    date: "Aug 17 - 12:00 PM",
-  },
-];
-
 const CourseList = () => {
-  const [hovered, setHovered] = useState(null);
-  const [active, setActive] = useState(0);
   const [hoveredCourse, setHoveredCourse] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [achievements, setAchievements] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [userName, setUserName] = useState("User");
   const [showLogoutToast, setShowLogoutToast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [courseSearch, setCourseSearch] = useState("");
+  const [enrollmentError, setEnrollmentError] = useState("");
   const navigate = useNavigate();
-
-  const getBadgeIcon = (name) => {
-    const normalized = name?.toLowerCase() || "";
-    if (normalized.includes("first")) return "👣";
-    if (normalized.includes("master") || normalized.includes("quiz")) return "🏆";
-    if (normalized.includes("consistency") || normalized.includes("streak")) return "🔥";
-    if (normalized.includes("challenge") || normalized.includes("milestone")) return "🎯";
-    if (normalized.includes("learning")) return "📘";
-    return "🎖️";
-  };
-
-  const fetchBadges = async (token) => {
-    try {
-      const config = {};
-      if (token) config.headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/user/badges`, config);
-      const badges = response.data.badges || [];
-      if (badges.length === 0) {
-        setAchievements([]);
-        return;
-      }
-      setAchievements(
-        badges.map((item) => {
-          const badge = item.Badge || {};
-          return {
-            id: item.id,
-            title: badge.name || "Badge",
-            description: badge.description || "Earned a badge",
-            icon: getBadgeIcon(badge.name),
-          };
-        })
-      );
-    } catch (error) {
-      console.error("Error fetching badges:", error);
-      setAchievements([]);
-    }
-  };
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
 
     const fetchData = async () => {
       try {
-        const [coursesData, userData] = await Promise.all([
+        const [coursesData, enrolledData, userData] = await Promise.all([
           fetchCourses(token),
+          fetchEnrolledCourses(token),
           fetchUserProfile(token),
         ]);
         setCourses(coursesData);
+        setEnrolledCourses((enrolledData || []).map((course) => ({
+          ...course,
+          id: course.courseId,
+        })));
         setUserName(userData.userName);
-        await fetchBadges(token);
       } catch (err) {
         console.error(err);
       } finally {
@@ -128,47 +70,101 @@ const CourseList = () => {
     }
   }, [showLogoutToast, navigate]);
 
+  const filteredCourses = courses.filter((course) => {
+    const query = courseSearch.trim().toLowerCase();
+    if (!query) return true;
+    return [course.courseName, course.description, course.stream]
+      .filter(Boolean)
+      .some((value) => value.toLowerCase().includes(query));
+  });
+  const filteredEnrolledCourses = enrolledCourses.filter((course) => {
+    const query = courseSearch.trim().toLowerCase();
+    if (!query) return true;
+    return [course.courseName, course.description, course.stream]
+      .filter(Boolean)
+      .some((value) => value.toLowerCase().includes(query));
+  });
+  const hasSearchResults = filteredCourses.length > 0 || filteredEnrolledCourses.length > 0;
+
   if (isLoading) {
-    return <MainPageLoader variant="headerSidebarSkeleton" text="Loading courses..." />;
+    return <DashboardLayout userName={userName} onLogout={handleLogout}><div className="dashboard-layout__loading" role="status">Loading courses…</div></DashboardLayout>;
   }
 
   return (
-    <div className="course-list-container">
-      <Sidebar active={active} hovered={hovered} setActive={setActive} setHovered={setHovered} />
+    <DashboardLayout userName={userName} onLogout={handleLogout} contentClassName="course-list-content" overlays={<LogoutToast show={showLogoutToast} />}>
+            <div className="course-search-bar" role="search">
+              <FaSearch aria-hidden="true" />
+              <input
+                type="search"
+                value={courseSearch}
+                onChange={(event) => setCourseSearch(event.target.value)}
+                placeholder="Search courses"
+                aria-label="Search courses"
+              />
+              {courseSearch && (
+                <button
+                  type="button"
+                  onClick={() => setCourseSearch("")}
+                  aria-label="Clear course search"
+                >
+                  <FaTimes />
+                </button>
+              )}
+            </div>
 
-      <div className="course-list-main">
-        <TopBar userName={userName} onLogout={handleLogout} />
+            {filteredEnrolledCourses.length > 0 && (
+              <NewCourseContainer
+                courses={filteredEnrolledCourses}
+                hoveredCourse={hoveredCourse}
+                setHoveredCourse={setHoveredCourse}
+                courseText="My Courses"
+                buttonText="Continue"
+              />
+            )}
+            {filteredCourses.length > 0 && (
+              <NewCourseContainer
+                courses={filteredCourses}
+                hoveredCourse={hoveredCourse}
+                setHoveredCourse={setHoveredCourse}
+                courseText={filteredEnrolledCourses.length > 0 ? "Explore Courses" : ""}
+                buttonText="Enroll"
+                onButtonClick={async (course) => {
+                  setEnrollmentError("");
+                  if (!isCourseActive(course)) {
+                    setEnrollmentError("This course is inactive and cannot be enrolled in.");
+                    return false;
+                  }
 
-        <div className="course-list-inner">
-          <div className="course-list-content">
-            {/* Removed Enrolled Courses section as per user request */}
-
-            <NewCourseContainer
-              courses={courses}
-              hoveredCourse={hoveredCourse}
-              setHoveredCourse={setHoveredCourse}
-              courseText="Courses"
-              buttonText="Enroll"
-              onButtonClick={async (course) => {
-                const token = localStorage.getItem("authToken");
-                try {
-                  await enrollCourse(token, course.id || course.courseId || course._id);
-                } catch (err) {
-                  console.error(err);
-                }
-              }}
-            />
-          </div>
-
-          <CourseListRightSidebar
-            activities={initialActivities}
-            achievements={achievements}
-          />
-        </div>
-
-        <LogoutToast show={showLogoutToast} />
-      </div>
-    </div>
+                  const token = localStorage.getItem("authToken");
+                  try {
+                    await enrollCourse(token, course);
+                    return true;
+                  } catch (err) {
+                    console.error(err);
+                    setEnrollmentError(
+                      err.response?.data?.message ||
+                        err.message ||
+                        "Unable to enroll in this course."
+                    );
+                    return false;
+                  }
+                }}
+              />
+            )}
+            {enrollmentError && (
+              <p
+                role="alert"
+                style={{ color: "#b42318", margin: "12px 6px", fontWeight: 600 }}
+              >
+                {enrollmentError}
+              </p>
+            )}
+            {!hasSearchResults && (
+              <p className="course-search-empty">
+                {courseSearch ? `No courses match “${courseSearch}”.` : "No courses are available yet."}
+              </p>
+            )}
+    </DashboardLayout>
   );
 };
 

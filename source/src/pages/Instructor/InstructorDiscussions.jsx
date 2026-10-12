@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import MainPageLoader from "../../components/MainPageLoader";
-import { InstructorSidebar } from "../../components/InstructorSidebar";
-import { TopBar } from "../../components/TopBar";
+import DashboardLayout from "../../components/DashboardLayout";
 import axios from "axios";
 
 const LogoutToast = ({ show }) => {
@@ -16,7 +14,6 @@ const LogoutToast = ({ show }) => {
 };
 
 const InstructorDiscussions = () => {
-  const [hovered, setHovered] = useState(null);
   const [userName, setUserName] = useState("Instructor");
   const [isLoading, setIsLoading] = useState(true);
   const [discussions, setDiscussions] = useState([]);
@@ -117,20 +114,17 @@ const InstructorDiscussions = () => {
   }, [showLogoutToast, navigate]);
 
   if (isLoading) {
-    return <MainPageLoader variant="headerSidebarSkeleton" text="Loading discussions..." />;
+    return <DashboardLayout userName={userName} onLogout={handleLogout}><div className="dashboard-layout__loading" role="status">Loading discussions…</div></DashboardLayout>;
   }
 
   return (
     <>
-      <div className="course-list-container">
-        <InstructorSidebar hovered={hovered} setHovered={setHovered} />
-
-        <div className="course-list-main">
-          <TopBar userName={userName} onLogout={handleLogout} />
-
-          <div className="course-list-inner">
-            <div className="course-list-content">
-              <h2 style={{ marginBottom: "20px", color: "#1e1e1e" }}>Course Discussions</h2>
+      <DashboardLayout
+        userName={userName}
+        onLogout={handleLogout}
+        contentClassName="course-list-content"
+        overlays={<LogoutToast show={showLogoutToast} />}
+      >
 
               <div style={{ marginBottom: "20px" }}>
                 <label htmlFor="course-select" style={{ marginRight: "10px", fontWeight: "bold" }}>Select Course:</label>
@@ -216,11 +210,7 @@ const InstructorDiscussions = () => {
                   </button>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
-      <LogoutToast show={showLogoutToast} />
+      </DashboardLayout>
     </>
   );
 };

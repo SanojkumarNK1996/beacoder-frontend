@@ -70,6 +70,18 @@ body, html, #root { height: 100%; margin: 0; }
   letter-spacing: 0.2px;
 }
 
+.login-heading {
+  width: 100%;
+  max-width: 480px;
+}
+
+.login-heading p {
+  margin: 0;
+  color: #315784;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .login-form {
   width: 100%;
   display: flex;
@@ -197,6 +209,42 @@ body, html, #root { height: 100%; margin: 0; }
   font-size: clamp(.95rem, 1.6vw, 1.15rem);
   margin: 0 0 18px;
   opacity: .95;
+}
+
+.lightbulb {
+  display: flex;
+  justify-content: center;
+  animation: login-bulb-float 3s ease-in-out infinite;
+}
+
+.glow {
+  transform-origin: center;
+  animation: login-glow-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes login-bulb-float {
+  0%,
+  100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes login-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 5px 10px rgba(255, 255, 255, 0.18));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 8px 18px rgba(255, 255, 255, 0.5));
+    transform: scale(1.07);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbulb,
+  .glow {
+    animation: none;
+  }
 }
 
 /* ---------- Responsive ---------- */

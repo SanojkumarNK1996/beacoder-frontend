@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar";
 import InteractiveField from "../components/InteractiveField";
 import LandingPageLoader from "../components/LandingPageLoader";
+import PageHeader from "../components/PageHeader";
 
 
 // ✅ Logout Toast Component
@@ -196,7 +197,7 @@ const LandingPage = () => {
     const courses = [
         {
             title: "JAVA",
-            img: "/images/advanced-java.jpg",
+            img: "/images/advanced-java.png",
             rating: "4.7",
             viewers: "(5.3k)",
         },
@@ -235,6 +236,13 @@ const LandingPage = () => {
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
+
+        // The landing page is public. Do not wait for a protected API request
+        // when the visitor is not logged in.
+        if (!token) {
+            setIsLoading(false);
+            return;
+        }
 
         const fetchData = async () => {
             try {
@@ -364,30 +372,10 @@ const LandingPage = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 1 }}
                     >
-                        <h1
-                            style={{
-                                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                                fontWeight: 700,
-                                marginBottom: "20px",
-                                lineHeight: 1.2,
-                            }}
-                        >
-                            Land Your{" "}
-                            <span style={{ color: "#00c3ff" }}>Dream Engineering Job</span>
-                        </h1>
-
-                        <p
-                            style={{
-                                fontSize: "clamp(1rem, 2vw, 1.3rem)",
-                                marginBottom: "35px",
-                                opacity: 0.9,
-                                color: "rgba(255,255,255,0.95)",
-                                lineHeight: 1.6,
-                            }}
-                        >
-                            Get hired at top companies with mentorship from engineers at Infosys, TCS & IBM.
-                            600+ students already placed. 90-day job guarantee or money back.
-                        </p>
+                        <PageHeader
+                            title="Land your dream engineering job"
+                            description="Build job-ready skills with guidance from experienced engineers."
+                        />
 
                         <motion.button
                             onClick={() => navigate("/signup")}
@@ -778,12 +766,6 @@ const LandingPage = () => {
                                 <li style={{ marginBottom: "10px" }}>
                                     Are the <strong>mentors</strong> in your course truly experienced — with at least{" "}
                                     <strong>5+ years</strong> in real product-based roles?
-                                </li>
-                                <li>
-                                    And finally — is there any platform confident enough to say:{" "}
-                                    <em style={{ color: "#00b894", fontWeight: "600" }}>
-                                        “Pay us only after you liked the course”?
-                                    </em>
                                 </li>
                             </ul>
                         </div>
@@ -1679,4 +1661,3 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
-

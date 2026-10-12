@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NewCourseContainer from "../components/NewCoursesContainer";
-import MainPageLoader from "../components/MainPageLoader";
 import "./Homepage.css";
-import { fetchUserProfile, fetchEnrolledCourses } from "../api/CourseList"; 
-import { CourseListRightSidebar } from "../components/CourseListRightSidebar";
-import { TopBar } from "../components/TopBar";
-import { Sidebar } from "../components/Sidebar";
+import { fetchUserProfile, fetchEnrolledCourses } from "../api/CourseList";
+import DashboardLayout from "../components/DashboardLayout";
 import axios from "axios";
-import { FaCheckCircle, FaClock, FaMedal } from "react-icons/fa";
+import { FaArrowRight, FaBookOpen, FaChalkboardTeacher, FaChartLine, FaClipboardList, FaVideo } from "react-icons/fa";
+import { fetchMentors } from "../api/Mentors";
+import { fetchStudentProgress } from "../api/Progress";
 
 
 
@@ -24,45 +23,21 @@ const LogoutToast = ({ show }) => {
   );
 };
 
-const initialAchievements = [
-  { icon: "🏅", title: "Java Rookie", description: "Completed first 5 lessons" },
-  { icon: "⭐", title: "Consistency Streak", description: "7 days in a row" },
-  { icon: "🎯", title: "Quiz Master", description: "3 quizzes passed" },
-];
-
-const initialActivities = [
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg",
-    title: "Completed: Variables & Data Types",
-    date: "Aug 15 - 12:00 PM",
-  },
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
-    title: "Attempted: Quiz - Java Basics",
-    date: "Aug 17 - 12:00 PM",
-  },
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",
-    title: "Completed: Variables & Data Types",
-    date: "Aug 15 - 12:00 PM",
-  },
-  {
-    img: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
-    title: "Earned: First 10 Lessons Badge",
-    date: "Aug 17 - 12:00 PM",
-  },
-];
-
 const Homepage = () => {
-  const [hovered, setHovered] = useState(null);
-  const [active, setActive] = useState(0);
   const [enrolledHoveredCourse, setEnrolledHoveredCourse] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [userName, setUserName] = useState("User");
   const [showLogoutToast, setShowLogoutToast] = useState(false);
+  const [showMentor, setShowMentor] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [assignmentStats, setAssignmentStats] = useState({ submittedCount: 0, pendingCount: 0, earnedBadges: 0 });
-  const [achievements, setAchievements] = useState([]);
+  const [studentProgress, setStudentProgress] = useState({
+    overallProgress: 0,
+    numberOfCourses: 0,
+    liveInterviewNumber: 0,
+    onlineMockTestNumber: 0,
+  });
+  const [assignmentStats, setAssignmentStats] = useState({ submittedCount: 0, pendingCount: 0 });
+  const [mentors, setMentors] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,18 +45,21 @@ const Homepage = () => {
 
     const fetchData = async () => {
       try {
-        const [userData, enrolledData, statsData, badgesData] = await Promise.all([
+        const [userData, enrolledData, progressData, statsData] = await Promise.all([
           fetchUserProfile(token),
           fetchEnrolledCourses(token),
+          fetchStudentProgress(token),
           fetchAssignmentStats(token),
-          fetchBadges(token),
         ]);
         setUserName(userData.userName);
+        const mentorVisibilityEnabled = userData.showMentor === true;
+        setShowMentor(mentorVisibilityEnabled);
         // Normalize enrolled courses so each has an `id` field taken from `courseId`
         const normalizedEnrolled = (enrolledData || []).map(c => ({ ...c, id: c.courseId }));
         setEnrolledCourses(normalizedEnrolled);
+        setStudentProgress(progressData);
         setAssignmentStats(statsData);
-        // fetchBadges sets achievements internally, so no need to set here
+        setMentors(mentorVisibilityEnabled ? await fetchMentors() : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -93,53 +71,10 @@ const Homepage = () => {
   }, []);
 
   const fetchAssignmentStats = async (token) => {
-    try {
-      const config = {};
-      if (token) config.headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/assignments/my-assignments/stats`, config);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching assignment stats:', error);
-      return { submittedCount: 0, pendingCount: 0, earnedBadges: 0 };
-    }
-  };
-
-  const getBadgeIcon = (name) => {
-    const normalized = name?.toLowerCase() || "";
-    if (normalized.includes("first")) return "👣";
-    if (normalized.includes("master") || normalized.includes("quiz")) return "🏆";
-    if (normalized.includes("consistency") || normalized.includes("streak")) return "🔥";
-    if (normalized.includes("challenge") || normalized.includes("milestone")) return "🎯";
-    if (normalized.includes("learning")) return "📘";
-    return "🎖️";
-  };
-
-  const fetchBadges = async (token) => {
-    try {
-      const config = {};
-      if (token) config.headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/user/badges`, config);
-      const badges = response.data.badges || [];
-
-      if (badges.length === 0) {
-        setAchievements([]);
-        return;
-      }
-
-      const mapped = badges.map((item) => {
-        const badge = item.Badge || {};
-        return {
-          id: item.id,
-          title: badge.name || "Badge",
-          description: badge.description || "Earned a new badge",
-          icon: getBadgeIcon(badge.name),
-        };
-      });
-      setAchievements(mapped);
-    } catch (error) {
-      console.error('Error fetching badges:', error);
-      setAchievements([]);
-    }
+    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/assignments/my-assignments/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data.data;
   };
 
   const handleLogout = () => {
@@ -159,37 +94,109 @@ const Homepage = () => {
   }, [showLogoutToast, navigate]);
 
   if (isLoading) {
-    return <MainPageLoader variant="headerSidebarSkeleton" text="Loading courses..." />;
+    return <DashboardLayout userName={userName} onLogout={handleLogout}><div className="dashboard-layout__loading" role="status">Loading dashboard…</div></DashboardLayout>;
   }
 
   return (
-    <div className="course-list-container">
-      <Sidebar active={active} hovered={hovered} setActive={setActive} setHovered={setHovered} />
+    <DashboardLayout userName={userName} onLogout={handleLogout} contentClassName="course-list-content" overlays={<LogoutToast show={showLogoutToast} />}>
+            <div className="homepage-overview-grid">
+              <section className="homepage-progress-section" aria-labelledby="homepage-progress-title">
+                <div className="homepage-section-heading">
+                  <div className="homepage-progress-heading">
+                    <span className="homepage-progress-title-icon"><FaChartLine /></span>
+                    <div>
+                      <h2 id="homepage-progress-title">Progress Overview</h2>
+                      <p>Track your learning and placement progress</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="assignment-stats-container">
+                  <div className="stat-card stat-progress">
+                    <div className="progress-ring" style={{ "--progress": `${Math.min(100, Math.max(0, studentProgress.overallProgress))}%` }}>
+                      <strong>{studentProgress.overallProgress}%</strong>
+                    </div>
+                    <h3 className="stat-card-title">Overall Progress</h3>
+                    <p className="stat-card-label">Keep going</p>
+                  </div>
+                  <div className="stat-card stat-courses">
+                    <span className="stat-card-icon"><FaBookOpen /></span>
+                    <h3 className="stat-card-value">{studentProgress.numberOfCourses}</h3>
+                    <h3 className="stat-card-title">Courses</h3>
+                    <div className="stat-card-progress-track"><span style={{ width: "65%" }} /></div>
+                  </div>
+                  <div className="stat-card stat-live-interviews">
+                    <span className="stat-card-icon"><FaVideo /></span>
+                    <h3 className="stat-card-value">{studentProgress.liveInterviewNumber}</h3>
+                    <h3 className="stat-card-title">Live Interview</h3>
+                    <div className="stat-card-progress-track"><span style={{ width: "45%" }} /></div>
+                  </div>
+                  <div className="stat-card stat-online-tests">
+                    <span className="stat-card-icon"><FaClipboardList /></span>
+                    <h3 className="stat-card-value">{studentProgress.onlineMockTestNumber}</h3>
+                    <h3 className="stat-card-title">Online Mock Tests</h3>
+                    <div className="stat-card-progress-track"><span style={{ width: "55%" }} /></div>
+                  </div>
+                  <div className="stat-card stat-assignments">
+                    <span className="stat-card-icon"><FaClipboardList /></span>
+                    <h3 className="stat-card-value">{assignmentStats.submittedCount}<small>/{assignmentStats.submittedCount + assignmentStats.pendingCount}</small></h3>
+                    <h3 className="stat-card-title">Assignments</h3>
+                    <div className="stat-card-progress-track">
+                      <span style={{ width: `${assignmentStats.submittedCount + assignmentStats.pendingCount ? (assignmentStats.submittedCount / (assignmentStats.submittedCount + assignmentStats.pendingCount)) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-      <div className="course-list-main">
-        <TopBar userName={userName} onLogout={handleLogout} />
-
-        <div className="course-list-inner">
-          <div className="course-list-content">
-            {/* Assignment Stats Section */}
-            <div className="assignment-stats-container">
-              <div className="stat-card stat-submitted">
-                <div className="stat-card-header"><FaCheckCircle /> Submitted</div>
-                <h3 className="stat-card-value">{assignmentStats.submittedCount}</h3>
-                <p className="stat-card-label">Assignments</p>
-              </div>
-
-              <div className="stat-card stat-pending">
-                <div className="stat-card-header"><FaClock /> Pending</div>
-                <h3 className="stat-card-value">{assignmentStats.pendingCount}</h3>
-                <p className="stat-card-label">Assignments</p>
-              </div>
-
-              <div className="stat-card stat-badges">
-                <div className="stat-card-header"><FaMedal /> Badges</div>
-                <h3 className="stat-card-value">{assignmentStats.earnedBadges}</h3>
-                <p className="stat-card-label">Earned</p>
-              </div>
+              <section className="homepage-mentors-section" aria-labelledby="homepage-mentors-title">
+                <div className="homepage-section-heading">
+                  <div className="homepage-mentor-title">
+                    <span className="homepage-mentor-title-icon"><FaChalkboardTeacher /></span>
+                    <div>
+                      <h2 id="homepage-mentors-title">Assigned Tutors</h2>
+                      <p>Your dedicated mentors</p>
+                    </div>
+                  </div>
+                </div>
+                {showMentor && mentors.length > 0 ? (
+                  <div className="homepage-mentor-list">
+                    {mentors.slice(0, 3).map((mentor) => {
+                      const profile = mentor.mentorProfile || mentor;
+                      const name = mentor.user?.name || mentor.name || "Mentor";
+                      return (
+                        <article className="homepage-mentor-card" key={mentor.user?.id || mentor.id || name}>
+                          <img
+                            className="homepage-mentor-avatar"
+                            src={profile.imageUrl || "/images/mentor-placeholder.svg"}
+                            alt={`${name} profile`}
+                            onError={(event) => { event.currentTarget.src = "/images/mentor-placeholder.svg"; }}
+                          />
+                          <div className="homepage-mentor-info">
+                            <strong>{name}</strong>
+                            <span>{profile.professionalTitle || "Learning mentor"}</span>
+                          </div>
+                          <span className="homepage-mentor-experience">
+                            {profile.totalExperience ? `${profile.totalExperience} yrs` : "—"}
+                          </span>
+                          <FaArrowRight className="homepage-mentor-arrow" aria-hidden="true" />
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="homepage-mentors-empty" role="status">
+                    <span className="homepage-mentors-empty-icon" aria-hidden="true">
+                      <FaChalkboardTeacher />
+                    </span>
+                    <div className="homepage-mentors-empty-copy">
+                      <span className="homepage-mentors-empty-kicker">PERSONALIZED GUIDANCE</span>
+                      <h3>Your mentor is on the way</h3>
+                      <p>
+                        Once you join, we’ll match you with a mentor from a product-based company to guide your learning and career journey.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </section>
             </div>
 
             {enrolledCourses && enrolledCourses.length > 0 && (
@@ -202,18 +209,22 @@ const Homepage = () => {
               />
             )}
 
+            {enrolledCourses.length === 0 && (
+              <section className="homepage-courses-empty" aria-labelledby="homepage-courses-empty-title">
+                <span className="homepage-courses-empty-icon" aria-hidden="true"><FaBookOpen /></span>
+                <div className="homepage-courses-empty-copy">
+                  <span className="homepage-courses-empty-kicker">YOUR NEXT STEP</span>
+                  <h2 id="homepage-courses-empty-title">Your learning journey starts here</h2>
+                  <p>You’re not enrolled in any courses yet. Explore the catalog and find a course to begin.</p>
+                </div>
+                <button type="button" className="homepage-courses-empty-action" onClick={() => navigate("/courses")}>
+                  Browse courses <FaArrowRight aria-hidden="true" />
+                </button>
+              </section>
+            )}
+
             {/* Removed Courses section as per user request */}
-          </div>
-
-          <CourseListRightSidebar
-            activities={initialActivities}
-            achievements={achievements}
-          />
-        </div>
-
-        <LogoutToast show={showLogoutToast} />
-      </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

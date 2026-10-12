@@ -1,53 +1,28 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Sidebar } from "../../components/Sidebar";
-import MainPageLoader from "../../components/MainPageLoader";
+import DashboardLayout from "../../components/DashboardLayout";
 import { FaChevronLeft } from "react-icons/fa";
-import MCQSet from "../../components/MCQSet";
-import { InterviewQuiz } from "../../components/InterviewQuiz";
-import { fetchSubtopicContents, completeContentBlock } from "../../api/CourseDetailPage";
+import {
+  fetchSubtopicContents,
+  fetchSubtopicReview,
+  saveSubtopicReview,
+} from "../../api/CourseDetailPage";
 import "./CourseDetailPage.css";
-
-// Toast Components
-const SuccessToast = ({ show }) => {
-  if (!show) return null;
-  return (
-    <div className="toast success">
-      <span className="toast-icon">✔</span>
-      Notes submitted successfully!
-    </div>
-  );
-};
-
-const ErrorToast = ({ show, message }) => {
-  if (!show) return null;
-  return (
-    <div className="toast failed">
-      <span className="toast-icon">✖</span>
-      {message || "Error submitting notes"}
-    </div>
-  );
-};
 
 const SubtopicContentPage = () => {
   const { cId, tId, sId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [hovered, setHovered] = useState(null);
-  const [active, setActive] = useState(1);
+  const isContentPreview = new URLSearchParams(location.search).get("contentPreview") === "true";
   const [contentData, setContentData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [subtopicTitle, setSubtopicTitle] = useState(location.state?.subtopicTitle || "");
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewSaving, setReviewSaving] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState("");
+  const subtopicTitle = location.state?.subtopicTitle || "";
   const [linearContent, setLinearContent] = useState([]);
   const [visibleIndex, setVisibleIndex] = useState(0);
-  const [notesText, setNotesText] = useState("");
-  const [notesLoading, setNotesLoading] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [showErrorToast, setShowErrorToast] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  // track whether we've already marked the last item complete so the effect
-  // doesn't fire repeatedly when visibleIndex stays at the end
-  const lastMarkedRef = useRef(false);
 
   const videoBlock = contentData.find(item => item.dataType === "youtube_video");
 
@@ -59,53 +34,31 @@ const SubtopicContentPage = () => {
         setContentData(res.data.data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch(() => {
         setContentData([]);
         setLoading(false);
       });
   }, [cId, tId, sId]);
 
-  // Fetch existing notes on component mount
   useEffect(() => {
-    const fetchExistingNotes = async () => {
-      console.log("Fetching notes for tId:", tId, "sId:", sId);
-      try {
-        const token = localStorage.getItem("authToken");
-        const config = {};
-        if (token) config.headers = { Authorization: `Bearer ${token}` };
+    if (isContentPreview) return;
+    let isCurrent = true;
+    const token = localStorage.getItem("authToken");
+    setReviewLoading(true);
+    setSelectedReview(null);
+    fetchSubtopicReview(sId, token)
+      .then((res) => {
+        if (isCurrent) setSelectedReview(res.data.data.selection);
+      })
+      .catch(() => {
+        if (isCurrent) setReviewMessage("Unable to load your previous response.");
+      })
+      .finally(() => {
+        if (isCurrent) setReviewLoading(false);
+      });
 
-        const notesUrl = `${import.meta.env.VITE_BASE_URL}/api/v1/notes/${tId}/${sId}`;
-        console.log("Notes API URL:", notesUrl);
-        
-        const response = await fetch(notesUrl, config);
-
-        console.log("Notes fetch response status:", response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Notes data received:", data);
-          
-          // Extract notes from response - notes are nested under data.data.notes
-          if (data && data.data && data.data.notes) {
-            console.log("Setting notes text to:", data.data.notes);
-            setNotesText(data.data.notes);
-          } else {
-            console.log("No notes found in response");
-          }
-        } else {
-          console.log("Notes fetch failed with status:", response.status);
-          const errorData = await response.json();
-          console.log("Error response:", errorData);
-        }
-      } catch (error) {
-        console.error("Error fetching existing notes:", error);
-      }
-    };
-
-    if (tId && sId) {
-      fetchExistingNotes();
-    }
-  }, [tId, sId]);
+    return () => { isCurrent = false; };
+  }, [sId, isContentPreview]);
 
   useEffect(() => {
     if (!contentData || contentData.length === 0) return;
@@ -117,17 +70,7 @@ const SubtopicContentPage = () => {
     const expandedList = [];
 
     filteredContent.forEach((item) => {
-      expandedList.push({ ...item, isQuiz: false });
-
-      if (item.Quizzes && item.Quizzes.length > 0) {
-        item.Quizzes.forEach((quiz) => {
-          expandedList.push({
-            ...quiz,
-            isQuiz: true,
-            parentTitle: item.title,
-          });
-        });
-      }
+      expandedList.push(item);
     });
 
     setLinearContent(expandedList);
@@ -139,25 +82,30 @@ const SubtopicContentPage = () => {
   }, [contentData]);
 
   const handleNext = () => {
-    // when user clicks next, mark the currently visible item as complete
-    const currentItem = linearContent[visibleIndex];
-    if (currentItem) {
-      const blockId = currentItem.contentBlockId || currentItem.id;
-      if (blockId) {
-        const token = localStorage.getItem("authToken");
-        completeContentBlock(blockId, token)
-          .then(() => {
-            console.log("marked content complete", blockId);
-          })
-          .catch((err) => {
-            console.error("error marking content complete", err);
-          });
-      }
-    }
-
     setVisibleIndex((prev) =>
       prev < linearContent.length - 1 ? prev + 1 : prev
     );
+  };
+
+  const handleReviewSelection = async (selection) => {
+    if (reviewSaving) return;
+    setReviewSaving(true);
+    setReviewMessage("");
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await saveSubtopicReview(sId, selection, token);
+      setSelectedReview(response.data.data.selection);
+      navigate(`/courses/${cId}`, {
+        state: {
+          expandedTopicId: tId,
+          selectedSubtopicId: sId,
+        },
+      });
+    } catch {
+      setReviewMessage("We couldn't save your response. Please try again.");
+    } finally {
+      setReviewSaving(false);
+    }
   };
 
   const handleBack = () => {
@@ -169,98 +117,18 @@ const SubtopicContentPage = () => {
     });
   };
 
-  const handleSubmitNotes = async () => {
-    if (!notesText.trim()) {
-      setErrorMessage("Please write something in the notes before submitting");
-      setShowErrorToast(true);
-      setTimeout(() => setShowErrorToast(false), 3000);
-      return;
-    }
-
-    setNotesLoading(true);
-    try {
-      const token = localStorage.getItem("authToken");
-      const config = {};
-      if (token) config.headers = { Authorization: `Bearer ${token}` };
-
-      const payload = {
-        topicId: parseInt(tId),
-        subtopicId: parseInt(sId),
-        notes: notesText
-      };
-
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/v1/notes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...config.headers
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        setShowSuccessToast(true);
-        setNotesText("");
-        setTimeout(() => setShowSuccessToast(false), 3000);
-      } else {
-        const errorData = await response.json();
-        setErrorMessage(errorData.message || "Failed to submit notes");
-        setShowErrorToast(true);
-        setTimeout(() => setShowErrorToast(false), 3000);
-      }
-    } catch (error) {
-      console.error("Error submitting notes:", error);
-      setErrorMessage("Error submitting notes. Please try again.");
-      setShowErrorToast(true);
-      setTimeout(() => setShowErrorToast(false), 3000);
-    } finally {
-      setNotesLoading(false);
-    }
-  };
-
-  // when the visible index reaches the very last item we need to behave the
-  // same way as handleNext did (marking it complete). this effect only runs
-  // once per session of the last item; lastMarkedRef prevents duplicate
-  // network calls if the user repeatedly re-renders on the same index.
-  useEffect(() => {
-    if (
-      linearContent.length > 0 &&
-      visibleIndex === linearContent.length - 1 &&
-      !lastMarkedRef.current
-    ) {
-      const lastItem = linearContent[visibleIndex];
-      const blockId = lastItem?.contentBlockId || lastItem?.id;
-      if (blockId) {
-        const token = localStorage.getItem("authToken");
-        completeContentBlock(blockId, token)
-          .then(() => {
-            lastMarkedRef.current = true;
-          })
-          .catch((err) => {
-            console.error("error marking last content complete", err);
-          });
-      }
-    }
-  }, [visibleIndex, linearContent]);
-
   if (loading) {
     return (
-      <MainPageLoader
-        variant="headerSidebarSkeleton"
-        text="Loading content..."
-      />
+      <DashboardLayout contentClassName="course-main"><div className="dashboard-layout__loading" role="status">Loading lesson content…</div></DashboardLayout>
     );
   }
 
   return (
-    <div className="course-detail-container">
-      <Sidebar
-        active={active}
-        hovered={hovered}
-        setActive={setActive}
-        setHovered={setHovered}
-      />
-      <div className="course-main">
+    <DashboardLayout
+      contentClassName="course-main"
+      pageTitle={subtopicTitle || contentData.find((item) => item.subtopicTitle)?.subtopicTitle || contentData.find((item) => item.title)?.title || "Lesson Content"}
+      pageDescription="Work through this lesson and record your understanding when you're done."
+    >
         <div
           className="course-split-layout"
           style={{
@@ -277,17 +145,7 @@ const SubtopicContentPage = () => {
               >
                 <FaChevronLeft />
               </button>
-              <span
-                style={{
-                  fontSize: "20px",
-                  fontWeight: 600,
-                  color: "#222",
-                }}
-              >
-                {subtopicTitle}
-              </span>
             </div>
-
             {/* Video Block */}
             {videoBlock && (
               <div className="video-player">
@@ -306,50 +164,26 @@ const SubtopicContentPage = () => {
                 <div style={{ marginBottom: "36px" }}>
                   {linearContent.slice(0, visibleIndex + 1).map((item, index) => (
                     <div key={index} style={{ marginBottom: "36px" }}>
-                      {!item.isQuiz ? (
-                        <>
-                          {item.dataType !== "mcq_set" &&
-                            item.dataType !== "youtube_video" && (
-                              <div className="description-title">{item.title}</div>
-                            )}
+                      {item.dataType !== "youtube_video" && item.title?.trim() && (
+                        <div className="description-title">{item.title}</div>
+                      )}
 
-                          {item.dataType === "notes" && (
-                            <div
-                              className="description-text"
-                              dangerouslySetInnerHTML={{
-                                __html: item.data.description,
-                              }}
-                            />
-                          )}
+                      {item.dataType === "notes" && (
+                        <div
+                          className="description-text"
+                          dangerouslySetInnerHTML={{
+                            __html: item.data.description,
+                          }}
+                        />
+                      )}
 
-                          {item.data && item.data.codeSnippet && (
-                            <div className="code-block">
-                              <div className="code-header">code</div>
-                              <pre className="code-body">
-                                {item.data.codeSnippet}
-                              </pre>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          {item.type === "mcq_set" ? (
-                            <div
-                              style={{
-                                width: "100%",
-                                display: "flex",
-                                justifyContent: "center",
-                                marginBottom: "20px",
-                              }}
-                            >
-                              <MCQSet questions={item.questionData} />
-                            </div>
-                          ) : (
-                            <div style={{ marginBottom: "20px" }}>
-                              <InterviewQuiz questions={item.questionData} />
-                            </div>
-                          )}
-                        </>
+                      {item.data && item.data.codeSnippet && (
+                        <div className="code-block">
+                          <div className="code-header">code</div>
+                          <pre className="code-body">
+                            {item.data.codeSnippet}
+                          </pre>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -394,30 +228,39 @@ const SubtopicContentPage = () => {
                   </button>
                 </div>
               )}
+
+              {!isContentPreview && (linearContent.length === 0 || visibleIndex === linearContent.length - 1) && (
+                <section className="subtopic-review" aria-labelledby="subtopic-review-title">
+                  <h2 id="subtopic-review-title">How was this subtopic?</h2>
+                  <p>Your response helps you track which subtopics you have reviewed.</p>
+                  <div className="subtopic-review-options">
+                    {[
+                      { value: "UNDERSTOOD", label: "I understood this well" },
+                      { value: "NEEDS_MORE", label: "Something is missing" },
+                      { value: "NOT_GOOD", label: "Not good" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`subtopic-review-option${selectedReview === option.value ? " selected" : ""}`}
+                        aria-pressed={selectedReview === option.value}
+                        disabled={reviewLoading || reviewSaving}
+                        onClick={() => handleReviewSelection(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="subtopic-review-message" role="status" aria-live="polite">
+                    {reviewLoading ? "Loading your response..." : reviewMessage}
+                  </p>
+                </section>
+              )}
             </div>
 
-            {/* Notes Section */}
-            <div className="notes-section">
-              <h3>Take Notes</h3>
-              <textarea 
-                placeholder="Write your notes here..." 
-                value={notesText}
-                onChange={(e) => setNotesText(e.target.value)}
-                disabled={notesLoading}
-              />
-              <button 
-                onClick={handleSubmitNotes}
-                disabled={notesLoading}
-              >
-                {notesLoading ? "Submitting..." : "Submit"}
-              </button>
-            </div>
           </div>
         </div>
-      </div>
-      <SuccessToast show={showSuccessToast} />
-      <ErrorToast show={showErrorToast} message={errorMessage} />
-    </div>
+    </DashboardLayout>
   );
 };
 

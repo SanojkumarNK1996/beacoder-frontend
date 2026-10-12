@@ -94,7 +94,10 @@ const Login = () => {
         <div className="login-card">
           {/* RIGHT (form) appears first on mobile via CSS order */}
           <section className="login-right" aria-labelledby="login-heading">
-            <h2 id="login-heading">Login</h2>
+            <div className="login-heading">
+              <h2 id="login-heading">Log in</h2>
+              <p>Access your courses, progress, and learning community.</p>
+            </div>
 
             <form onSubmit={formSubmit} className="login-form" noValidate>
               <div className="field">
@@ -167,7 +170,6 @@ const Login = () => {
           {/* LEFT — decorative, minimal on mobile */}
           <aside className="login-left" aria-hidden="true">
             <div className="left-inner">
-              <h1>Bright Ideas Start Here</h1>
               <p className="quote">{quote}</p>
 
               <div className="lightbulb" aria-hidden="true">

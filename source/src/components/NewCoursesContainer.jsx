@@ -17,16 +17,18 @@ const NewCourseContainer = ({
       width: "100%",
     }}
   >
-    <span
-      style={{
-        fontSize: "22px",
-        fontWeight: "600",
-        color: "#1e1e1e",
-        marginLeft: "6px",
-      }}
-    >
-      {courseText}
-    </span>
+    {courseText && (
+      <span
+        style={{
+          fontSize: "22px",
+          fontWeight: "600",
+          color: "#1e1e1e",
+          marginLeft: "6px",
+        }}
+      >
+        {courseText}
+      </span>
+    )}
 
     {courses?.length > 0 &&
       courses.map((course, idx) => (
